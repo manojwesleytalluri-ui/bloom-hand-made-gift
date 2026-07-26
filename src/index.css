@@ -1,0 +1,243 @@
+@import "tailwindcss";
+
+:root {
+  --logo-gold-1: #ebd7b9;
+  --logo-gold-2: #b8965c;
+  --logo-gold-3: #806132;
+  
+  --logo-burgundy-1: #b83b5e;
+  --logo-burgundy-2: #6b092b;
+}
+
+.light {
+  --logo-gold-1: #8c1d40;
+  --logo-gold-2: #540420;
+  --logo-gold-3: #2d0110;
+  
+  --logo-burgundy-1: #540420;
+  --logo-burgundy-2: #1c020b;
+}
+
+@layer base {
+  body {
+    background-color: #121215;
+    color: #f8f5ee;
+    font-family: 'Inter', system-ui, sans-serif;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+/* Custom Scrollbar — subtle and refined */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #121215;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(107, 9, 43, 0.25);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(107, 9, 43, 0.45);
+}
+
+/* Glassmorphism — softer, less aggressive */
+.glass-panel {
+  background: rgba(26, 26, 31, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(107, 9, 43, 0.15);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.glass-card-hover {
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.glass-card-hover:hover {
+  transform: translateY(-6px);
+  border-color: rgba(107, 9, 43, 0.3);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+}
+
+/* Typography — refined, less flashy gold */
+.text-gold-gradient {
+  background: linear-gradient(135deg, #b83b5e 0%, #6b092b 50%, #3d0216 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.bg-gold-gradient {
+  background: linear-gradient(135deg, #b83b5e 0%, #6b092b 50%, #3d0216 100%);
+}
+
+/* Shadows — subtle */
+.shadow-gold-sm {
+  box-shadow: 0 2px 12px rgba(107, 9, 43, 0.1);
+}
+.shadow-gold-lg {
+  box-shadow: 0 8px 32px rgba(107, 9, 43, 0.15);
+}
+
+/* Book Now button glow — subtle pulse */
+.glow-gold-btn {
+  position: relative;
+  transition: all 0.3s ease;
+}
+.glow-gold-btn::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  background: linear-gradient(45deg, #6b092b, #b83b5e, #768a66, #6b092b);
+  border-radius: 9999px;
+  z-index: -1;
+  filter: blur(6px);
+  opacity: 0.3;
+  transition: opacity 0.3s ease;
+}
+.glow-gold-btn:hover::after {
+  opacity: 0.6;
+}
+
+/* Animations — smooth and subtle */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+.animate-slideUp {
+  animation: slideUp 0.6s ease-out forwards;
+}
+
+.animate-float {
+  animation: float 5s ease-in-out infinite;
+}
+
+.animate-spin-slow {
+  animation: spin 12s linear infinite;
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Light mode overrides */
+.light body {
+  background-color: #faf9f6 !important; /* Premium soft milk white background */
+  color: #1e1e24 !important;
+}
+
+.light .glass-panel {
+  background: rgba(255, 255, 255, 0.75) !important;
+  border: 1px solid rgba(107, 9, 43, 0.12) !important;
+  box-shadow: 0 10px 30px rgba(107, 9, 43, 0.04) !important;
+}
+
+/* Light mode typography colors */
+.light h1,
+.light h2,
+.light h3,
+.light h4,
+.light h5,
+.light h6 {
+  color: #540420 !important; /* Rich deep burgundy headers */
+}
+
+/* Make burgundy gradient letters pop beautifully on light background */
+.light .text-gold-gradient {
+  background: linear-gradient(135deg, #8c1d40 0%, #540420 50%, #2d0110 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+/* Adjust layout containers for light theme cards */
+.light .bg-charcoal-900\/50,
+.light .bg-obsidian-900\/50,
+.light .bg-charcoal-950\/80,
+.light .bg-obsidian-950\/80,
+.light .bg-charcoal-900,
+.light .bg-obsidian-900 {
+  background-color: rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: blur(16px) !important;
+  border-color: rgba(107, 9, 43, 0.08) !important;
+  box-shadow: 0 12px 30px rgba(107, 9, 43, 0.04) !important;
+}
+
+/* Darker text overrides for light mode readability */
+.light .text-ivory-200,
+.light .text-pearl-200 {
+  color: #3e3e4a !important; /* Rich slate gray */
+}
+
+.light .text-ivory-300,
+.light .text-pearl-300,
+.light .text-ivory-400,
+.light .text-pearl-400 {
+  color: #4c4c58 !important;
+}
+
+.light .text-ivory-100,
+.light .text-pearl-100,
+.light .text-ivory-50,
+.light .text-pearl-50 {
+  color: #121215 !important;
+}
+
+.light .text-charcoal-900 {
+  color: #540420 !important; /* Deep burgundy headers */
+}
+
+.light .text-charcoal-800\/60 {
+  color: rgba(107, 9, 43, 0.75) !important; /* Saturated muted burgundy text */
+}
+
+/* Make buttons prominent and easy to read in light theme */
+.light .bg-mutedGold-gradient,
+.light .bg-gold-gradient {
+  background: linear-gradient(135deg, #8c1d40 0%, #540420 50%, #2d0110 100%) !important;
+  color: #ffffff !important; /* Crisp white letters on deep burgundy */
+}
+
+.light .bg-mutedGold-gradient * ,
+.light .bg-gold-gradient * {
+  color: #ffffff !important;
+}
+
+/* Adjust highlight icons and badges in light theme */
+.light .text-gold-400,
+.light .text-mutedGold-400 {
+  color: #6b092b !important;
+}
+
+.light .border-gold-500\/10,
+.light .border-mutedGold-500\/10,
+.light .border-gold-500\/30,
+.light .border-mutedGold-500\/30 {
+  border-color: rgba(107, 9, 43, 0.15) !important;
+}
+
+.light .bg-charcoal-950 {
+  background-color: #faf9f6 !important;
+}
+
