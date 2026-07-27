@@ -3,7 +3,7 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Float, Sparkles } from '@react-three/drei';
 import * as THREE from 'three';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, ShoppingBag, Sparkles as SparklesIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ShoppingBag, Sparkles as SparklesIcon, Volume2, VolumeX } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
 // Carousel Items data matching public/assets/images
@@ -157,6 +157,8 @@ export default function FlowerHeroCanvas({ preset = 'gold', setPreset }) {
   const [hasWebGL, setHasWebGL] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
   const [direction, setDirection] = useState(0); // -1: left, 1: right
+  const [isPlayingSound, setIsPlayingSound] = useState(false);
+  const toggleSound = () => setIsPlayingSound(!isPlayingSound);
   const { formatPrice, addToCart } = useApp();
 
   useEffect(() => {
@@ -248,6 +250,44 @@ export default function FlowerHeroCanvas({ preset = 'gold', setPreset }) {
   return (
     <div className="w-full h-[340px] sm:h-[500px] lg:h-[680px] relative rounded-3xl overflow-hidden bg-charcoal-950/40 backdrop-blur-md border border-mutedGold-500/20 shadow-2xl group flex flex-col justify-between p-6 sm:p-8 select-none">
       
+      {/* Lighting Preset Selector Controls */}
+      <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-20 flex items-center gap-1.5 sm:gap-2 bg-obsidian-950/90 backdrop-blur-md p-1 sm:p-1.5 rounded-full border border-gold-500/30">
+        <span className="text-[9px] sm:text-[10px] uppercase font-bold text-gold-400 px-1.5 sm:px-2">3D Aura:</span>
+        <button
+          onClick={() => setPreset('gold')}
+          className={`px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-[9px] sm:text-[10px] uppercase font-medium transition-all ${
+            preset === 'gold' ? 'bg-gold-500 text-obsidian-950 font-bold' : 'text-pearl-300 hover:text-gold-300'
+          }`}
+        >
+          Gold
+        </button>
+        <button
+          onClick={() => setPreset('emerald')}
+          className={`px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-[9px] sm:text-[10px] uppercase font-medium transition-all ${
+            preset === 'emerald' ? 'bg-emerald-700 text-pearl-50 font-bold' : 'text-pearl-300 hover:text-gold-300'
+          }`}
+        >
+          Emerald
+        </button>
+        <button
+          onClick={() => setPreset('crimson')}
+          className={`px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-[9px] sm:text-[10px] uppercase font-medium transition-all ${
+            preset === 'crimson' ? 'bg-red-900 text-pearl-50 font-bold' : 'text-pearl-300 hover:text-gold-300'
+          }`}
+        >
+          Crimson
+        </button>
+      </div>
+
+      {/* Audio Ambience Toggle */}
+      <button
+        onClick={toggleSound}
+        className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20 p-2 sm:p-2.5 rounded-full bg-obsidian-950/90 backdrop-blur-md border border-gold-500/30 text-gold-400 hover:text-pearl-100 transition-colors"
+        title="Toggle Luxury Ambient Sound"
+      >
+        {isPlayingSound ? <Volume2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gold-400 animate-pulse" /> : <VolumeX className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-pearl-400" />}
+      </button>
+
       {/* 3D WebGL Canvas Layer (Background environment) */}
       {hasWebGL && (
         <div className="absolute inset-0 z-0">
@@ -278,7 +318,7 @@ export default function FlowerHeroCanvas({ preset = 'gold', setPreset }) {
       )}
 
       {/* Top Tagline Indicator */}
-      <div className="relative z-10 w-full flex justify-between items-center text-[10px] uppercase font-bold tracking-widest text-mutedGold-400">
+      <div className="relative z-10 w-full flex justify-between items-center text-[10px] uppercase font-bold tracking-widest text-mutedGold-400 mt-10 sm:mt-8">
         <div className="flex items-center gap-1.5">
           <SparklesIcon className="w-3.5 h-3.5 text-mutedGold-400 animate-pulse" />
           <span>Interactive Art Stage</span>

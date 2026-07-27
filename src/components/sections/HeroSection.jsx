@@ -1,16 +1,11 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import FlowerHeroCanvas from '../3d/FlowerHeroCanvas';
-import { Sparkles, Calendar, ArrowRight, ShieldCheck, Award, Truck, Compass, Volume2, VolumeX } from 'lucide-react';
+import { Sparkles, Calendar, ArrowRight, ShieldCheck, Award, Truck, Compass } from 'lucide-react';
 
 export default function HeroSection() {
   const { setIsBookingOpen, setIsAiModalOpen } = useApp();
   const [lightingPreset, setLightingPreset] = useState('gold');
-  const [isPlayingSound, setIsPlayingSound] = useState(false);
-
-  const toggleSound = () => {
-    setIsPlayingSound(!isPlayingSound);
-  };
 
   return (
     <section id="home" className="relative min-h-screen pt-32 lg:pt-36 pb-16 flex items-center justify-center overflow-hidden">
@@ -90,44 +85,6 @@ export default function HeroSection() {
 
           {/* Right 3D Interactive Canvas & Lighting Controls */}
           <div className="lg:col-span-6 relative">
-            {/* Lighting Preset Selector Controls */}
-            <div className="absolute top-4 left-4 z-20 flex items-center gap-2 bg-obsidian-950/80 backdrop-blur-md p-1.5 rounded-full border border-gold-500/30">
-              <span className="text-[10px] uppercase font-bold text-gold-400 px-2">3D Aura:</span>
-              <button
-                onClick={() => setLightingPreset('gold')}
-                className={`px-3 py-1 rounded-full text-[10px] uppercase font-medium transition-all ${
-                  lightingPreset === 'gold' ? 'bg-gold-500 text-obsidian-950 font-bold' : 'text-pearl-300 hover:text-gold-300'
-                }`}
-              >
-                Midnight Gold
-              </button>
-              <button
-                onClick={() => setLightingPreset('emerald')}
-                className={`px-3 py-1 rounded-full text-[10px] uppercase font-medium transition-all ${
-                  lightingPreset === 'emerald' ? 'bg-emerald-700 text-pearl-50 font-bold' : 'text-pearl-300 hover:text-gold-300'
-                }`}
-              >
-                Emerald
-              </button>
-              <button
-                onClick={() => setLightingPreset('crimson')}
-                className={`px-3 py-1 rounded-full text-[10px] uppercase font-medium transition-all ${
-                  lightingPreset === 'crimson' ? 'bg-red-900 text-pearl-50 font-bold' : 'text-pearl-300 hover:text-gold-300'
-                }`}
-              >
-                Crimson
-              </button>
-            </div>
-
-            {/* Audio Ambience Toggle */}
-            <button
-              onClick={toggleSound}
-              className="absolute top-4 right-4 z-20 p-2.5 rounded-full bg-obsidian-950/80 backdrop-blur-md border border-gold-500/30 text-gold-400 hover:text-pearl-100 transition-colors"
-              title="Toggle Luxury Ambient Sound"
-            >
-              {isPlayingSound ? <Volume2 className="w-4 h-4 text-gold-400 animate-pulse" /> : <VolumeX className="w-4 h-4 text-pearl-400" />}
-            </button>
-
             {/* 3D Canvas */}
             <FlowerHeroCanvas preset={lightingPreset} setPreset={setLightingPreset} />
           </div>
