@@ -179,10 +179,9 @@ export const AppProvider = ({ children }) => {
   };
 
   // Price Format Helper
-  const formatPrice = (priceInUSD) => {
-    const cur = currencies[currency] || currencies.USD;
-    const converted = Math.round(priceInUSD * cur.rate);
-    return `${cur.symbol}${converted.toLocaleString()}`;
+  const formatPrice = (priceVal) => {
+    const value = Math.round(parseFloat(priceVal) || 0);
+    return `₹${value.toLocaleString('en-IN')}`;
   };
 
   // Cart Handlers

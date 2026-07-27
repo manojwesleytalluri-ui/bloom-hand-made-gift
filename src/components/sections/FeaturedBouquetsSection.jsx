@@ -79,7 +79,7 @@ export default function FeaturedBouquetsSection() {
                   {/* Image Container */}
                   <div className="relative h-[380px] overflow-hidden">
                     {/* Image Skeleton Loader */}
-                    {!isLoaded && (
+                    {!isLoaded && !(product.image && product.image.startsWith('data:')) && (
                       <div className="absolute inset-0 bg-charcoal-800 animate-pulse flex items-center justify-center">
                         <Sparkles className="w-8 h-8 text-mutedGold-500/30 animate-spin" />
                       </div>
@@ -90,8 +90,10 @@ export default function FeaturedBouquetsSection() {
                       src={product.image}
                       alt={product.name}
                       onLoad={() => handleImageLoad(product.id)}
-                      className={`w-full h-full object-cover transition-all duration-1000 ease-out group-hover:scale-110 ${isLoaded ? 'opacity-100' : 'opacity-0'
-                        }`}
+                      onError={() => handleImageLoad(product.id)}
+                      className={`w-full h-full object-cover transition-all duration-1000 ease-out group-hover:scale-110 ${
+                        isLoaded || (product.image && product.image.startsWith('data:')) ? 'opacity-100' : 'opacity-0'
+                      }`}
                     />
 
                     {/* Premium Image Overlay Gradient */}

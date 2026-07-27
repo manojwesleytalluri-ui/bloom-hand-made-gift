@@ -167,26 +167,7 @@ export default function Navbar() {
           {/* Right Action Bar */}
           <div className="hidden 2xl:flex items-center gap-2.5 shrink-0">
             
-            {/* Currency Selector */}
-            <div className="relative group">
-              <button className="flex items-center gap-1 text-[11px] text-ivory-200/80 hover:text-mutedGold-400 px-2.5 py-1 rounded-full border border-mutedGold-500/20 hover:border-mutedGold-500/40 transition-colors">
-                <Globe className="w-3.5 h-3.5 text-mutedGold-400" />
-                <span>{currency}</span>
-              </button>
-              <div className="absolute right-0 top-full mt-2 w-28 py-2 bg-charcoal-900 border border-mutedGold-500/30 rounded-2xl shadow-glass-card opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all z-50">
-                {Object.keys(currencies).map((code) => (
-                  <button
-                    key={code}
-                    onClick={() => setCurrency(code)}
-                    className={`w-full text-left px-3 py-1 text-[11px] transition-colors ${
-                      currency === code ? 'text-mutedGold-400 font-bold bg-mutedGold-500/10' : 'text-ivory-200 hover:text-mutedGold-300'
-                    }`}
-                  >
-                    {code} ({currencies[code].symbol})
-                  </button>
-                ))}
-              </div>
-            </div>
+
 
             {/* Dark / Light Mode Toggle */}
             <button
