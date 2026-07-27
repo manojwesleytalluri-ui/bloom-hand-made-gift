@@ -198,13 +198,15 @@ export default function AdminPortalModal() {
                 
                 <div className="glass-panel p-5 rounded-2xl border border-gold-500/30 space-y-2">
                   <div className="flex items-center justify-between text-xs text-pearl-300">
-                    <span>Monthly Revenue</span>
+                    <span>Live Revenue</span>
                     <DollarSign className="w-4 h-4 text-gold-400" />
                   </div>
                   <span className="text-2xl font-serif font-bold text-gold-gradient block">
-                    {formatPrice(184500)}
+                    {formatPrice(orders.reduce((acc, o) => acc + o.amountUSD, 0))}
                   </span>
-                  <span className="text-[10px] text-emerald-400 font-medium">↑ +24.8% vs last month</span>
+                  <span className="text-[10px] text-emerald-400 font-medium">
+                    {orders.length === 0 ? "No sales recorded yet" : `Based on ${orders.length} orders`}
+                  </span>
                 </div>
 
                 <div className="glass-panel p-5 rounded-2xl border border-gold-500/30 space-y-2">
@@ -243,8 +245,12 @@ export default function AdminPortalModal() {
                     <span>Stem Inventory Integrity</span>
                     <Boxes className="w-4 h-4 text-gold-400" />
                   </div>
-                  <span className="text-2xl font-serif font-bold text-pearl-50 block">4,245 Stems</span>
-                  <span className="text-[10px] text-emerald-400 font-medium">98.5% Prime Condition</span>
+                  <span className="text-2xl font-serif font-bold text-pearl-50 block">
+                    {inventory.reduce((acc, item) => acc + item.stock, 0).toLocaleString()} Stems
+                  </span>
+                  <span className="text-[10px] text-emerald-400 font-medium">
+                    {inventory.length === 0 ? "Inventory empty" : `${inventory.filter(i => i.status === 'Low Stock').length} low stock variety`}
+                  </span>
                 </div>
 
                 <div className="glass-panel p-5 rounded-2xl border border-gold-500/30 space-y-2">
@@ -264,68 +270,52 @@ export default function AdminPortalModal() {
                 <div className="lg:col-span-7 glass-panel p-6 rounded-2xl border border-gold-500/20 space-y-4">
                   <h4 className="font-serif font-bold text-base text-pearl-50">Global Boutique Revenue Share</h4>
                   
-                  <div className="space-y-3 text-xs">
-                    <div>
-                      <div className="flex justify-between text-pearl-200 mb-1">
-                        <span>Paris Flagship (Place Vendôme)</span>
-                        <span className="font-bold text-gold-400">38% ({formatPrice(70110)})</span>
-                      </div>
-                      <div className="w-full bg-obsidian-900 h-2 rounded-full overflow-hidden">
-                        <div className="bg-gold-gradient h-full w-[38%]"></div>
+                  {orders.length === 0 ? (
+                    <div className="text-center py-16 text-xs text-pearl-400 font-light">
+                      No sales recorded yet. Once checkout orders are placed, distribution details will populate here.
+                    </div>
+                  ) : (
+                    <div className="space-y-3 text-xs">
+                      <div>
+                        <div className="flex justify-between text-pearl-200 mb-1">
+                          <span>New York Suite Delivery</span>
+                          <span className="font-bold text-gold-400">100% ({formatPrice(orders.reduce((acc, o) => acc + o.amountUSD, 0))})</span>
+                        </div>
+                        <div className="w-full bg-obsidian-900 h-2 rounded-full overflow-hidden">
+                          <div className="bg-gold-gradient h-full w-full"></div>
+                        </div>
                       </div>
                     </div>
-
-                    <div>
-                      <div className="flex justify-between text-pearl-200 mb-1">
-                        <span>Dubai Flagship (Downtown Palace)</span>
-                        <span className="font-bold text-gold-400">28% ({formatPrice(51660)})</span>
-                      </div>
-                      <div className="w-full bg-obsidian-900 h-2 rounded-full overflow-hidden">
-                        <div className="bg-emerald-600 h-full w-[28%]"></div>
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="flex justify-between text-pearl-200 mb-1">
-                        <span>London Flagship (Mayfair)</span>
-                        <span className="font-bold text-gold-400">20% ({formatPrice(36900)})</span>
-                      </div>
-                      <div className="w-full bg-obsidian-900 h-2 rounded-full overflow-hidden">
-                        <div className="bg-gold-500 h-full w-[20%]"></div>
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="flex justify-between text-pearl-200 mb-1">
-                        <span>Mumbai Luxury Quarter (Bandra)</span>
-                        <span className="font-bold text-gold-400">14% ({formatPrice(25830)})</span>
-                      </div>
-                      <div className="w-full bg-obsidian-900 h-2 rounded-full overflow-hidden">
-                        <div className="bg-pearl-300 h-full w-[14%]"></div>
-                      </div>
-                    </div>
-                  </div>
+                  )}
                 </div>
 
                 <div className="lg:col-span-5 glass-panel p-6 rounded-2xl border border-gold-500/20 space-y-4">
                   <h4 className="font-serif font-bold text-base text-pearl-50">Recent VIP Activity</h4>
-                  <div className="space-y-3 text-xs text-pearl-300">
-                    <div className="p-3 rounded-xl bg-obsidian-900 border border-gold-500/15 flex items-center justify-between">
-                      <div>
-                        <span className="font-bold text-pearl-50 block">New Order #BLM-889421</span>
-                        <span className="text-[10px] text-pearl-400">100 Red Roses Box • New York</span>
-                      </div>
-                      <span className="text-gold-gradient font-bold">{formatPrice(450)}</span>
+                  
+                  {orders.length === 0 && appointments.length === 0 ? (
+                    <div className="text-center py-16 text-xs text-pearl-400 font-light">
+                      No recent activities recorded.
                     </div>
-
-                    <div className="p-3 rounded-xl bg-obsidian-900 border border-gold-500/15 flex items-center justify-between">
-                      <div>
-                        <span className="font-bold text-pearl-50 block">Consultation Scheduled</span>
-                        <span className="text-[10px] text-pearl-400">Royal Wedding Gala • Dubai</span>
-                      </div>
-                      <span className="text-emerald-400 font-bold">Confirmed</span>
+                  ) : (
+                    <div className="space-y-3 text-xs text-pearl-300">
+                      {[
+                        ...orders.map(o => ({ type: 'order', id: o.id, text: `${o.product} • New York`, amount: o.amountUSD, title: `New Order #${o.id}` })),
+                        ...appointments.map(a => ({ type: 'appt', id: a.id, text: `${a.occasion} • ${a.format}`, title: 'Consultation Booked', status: 'Confirmed' }))
+                      ].slice(0, 4).map((act, idx) => (
+                        <div key={idx} className="p-3 rounded-xl bg-obsidian-900 border border-gold-500/15 flex items-center justify-between">
+                          <div>
+                            <span className="font-bold text-pearl-50 block">{act.title}</span>
+                            <span className="text-[10px] text-pearl-400 line-clamp-1">{act.text}</span>
+                          </div>
+                          {act.type === 'order' ? (
+                            <span className="text-gold-gradient font-bold">{formatPrice(act.amount)}</span>
+                          ) : (
+                            <span className="text-emerald-400 font-bold">{act.status}</span>
+                          )}
+                        </div>
+                      ))}
                     </div>
-                  </div>
+                  )}
                 </div>
 
               </div>
