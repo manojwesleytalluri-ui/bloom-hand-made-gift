@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { PRODUCTS } from '../../data/products';
 import {
@@ -20,7 +20,8 @@ import {
   Trash2,
   RefreshCw,
   Search,
-  Filter
+  Filter,
+  Lock
 } from 'lucide-react';
 
 export default function AdminPortalModal() {
@@ -72,7 +73,79 @@ export default function AdminPortalModal() {
   const [newImage, setNewImage] = useState('');
   const [isProductAdded, setIsProductAdded] = useState(false);
 
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
+  const [adminPassword, setAdminPassword] = useState('');
+  const [loginError, setLoginError] = useState(false);
+
+  // Reset login state when the modal closes
+  useEffect(() => {
+    if (!isAdminOpen) {
+      setIsAdminAuthenticated(false);
+      setAdminPassword('');
+      setLoginError(false);
+    }
+  }, [isAdminOpen]);
+
+  const handleAdminLogin = (e) => {
+    e.preventDefault();
+    if (adminPassword === 'admin') {
+      setIsAdminAuthenticated(true);
+      setLoginError(false);
+    } else {
+      setLoginError(true);
+    }
+  };
+
   if (!isAdminOpen) return null;
+
+  if (!isAdminAuthenticated) {
+    return (
+      <div className="fixed inset-0 z-50 overflow-hidden bg-obsidian-950/95 backdrop-blur-2xl p-4 flex items-center justify-center animate-fadeIn">
+        <div className="w-full max-w-md glass-panel border border-gold-500/40 rounded-3xl p-8 relative space-y-6 shadow-gold-lg text-center">
+          <button
+            onClick={() => setIsAdminOpen(false)}
+            className="absolute top-4 right-4 text-pearl-300 hover:text-gold-400 font-bold transition-colors"
+          >
+            ✕
+          </button>
+
+          <div className="w-16 h-16 mx-auto rounded-full bg-gold-500/10 border border-gold-400/40 flex items-center justify-center text-gold-400">
+            <Lock className="w-8 h-8 animate-pulse" />
+          </div>
+
+          <div className="space-y-2">
+            <h3 className="font-serif text-2xl font-bold text-pearl-50">Atelier Administration</h3>
+            <p className="text-xs text-pearl-300 font-light max-w-xs mx-auto">
+              Please authenticate to unlock the sovereign floral command centre.
+            </p>
+          </div>
+
+          <form onSubmit={handleAdminLogin} className="space-y-4">
+            <div>
+              <input
+                type="password"
+                required
+                placeholder="Enter Password"
+                className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-3.5 text-center text-xs text-pearl-100 outline-none tracking-widest focus:border-gold-400 transition-colors"
+                value={adminPassword}
+                onChange={(e) => setAdminPassword(e.target.value)}
+              />
+              {loginError && (
+                <p className="text-[10px] text-red-400 mt-2 font-serif">Incorrect admin credentials. Try 'admin'.</p>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              className="w-full py-3.5 rounded-full bg-gold-gradient text-obsidian-950 font-serif font-bold text-xs uppercase tracking-widest shadow-gold-sm hover:scale-[1.02] active:scale-95 transition-all"
+            >
+              Unlock Command Panel
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   const updateOrderStatus = (orderId, newStatus) => {
     setOrders((prev) =>
@@ -194,7 +267,7 @@ export default function AdminPortalModal() {
             <div className="space-y-6 animate-fadeIn">
               
               {/* KPI Cards Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 
                 <div className="glass-panel p-5 rounded-2xl border border-gold-500/30 space-y-2">
                   <div className="flex items-center justify-between text-xs text-pearl-300">
@@ -218,26 +291,6 @@ export default function AdminPortalModal() {
                   <span className="text-[10px] text-gold-300 font-medium">
                     {orders.filter(o => o.status === 'In Preparation').length} preparing • {orders.filter(o => o.status === 'Out for Delivery').length} out
                   </span>
-                </div>
-
-                <div className="glass-panel p-5 rounded-2xl border border-gold-500/30 space-y-2">
-                  <div className="flex items-center justify-between text-xs text-pearl-300">
-                    <span>Website Visitors</span>
-                    <select
-                      value={trafficPeriod}
-                      onChange={(e) => setTrafficPeriod(e.target.value)}
-                      className="bg-obsidian-900 border border-gold-500/20 text-gold-300 text-[10px] rounded px-1.5 py-0.5 outline-none cursor-pointer font-serif font-bold"
-                    >
-                      <option value="today">Today</option>
-                      <option value="week">This Week</option>
-                      <option value="month">This Month</option>
-                      <option value="allTime">All Time</option>
-                    </select>
-                  </div>
-                  <span className="text-2xl font-serif font-bold text-pearl-50 block">
-                    {trafficData[trafficPeriod].visitors}
-                  </span>
-                  <span className="text-[10px] text-emerald-400 font-medium">↑ {trafficData[trafficPeriod].change} vs prev</span>
                 </div>
 
                 <div className="glass-panel p-5 rounded-2xl border border-gold-500/30 space-y-2">
