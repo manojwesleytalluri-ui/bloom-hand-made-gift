@@ -11,8 +11,6 @@ export default function MagicalCursor() {
   const isTouch = typeof window !== 'undefined' && (window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window || navigator.maxTouchPoints > 0);
 
   useEffect(() => {
-    if (isTouch) return;
-
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -43,15 +41,26 @@ export default function MagicalCursor() {
       spawnBurst(currentX, currentY);
     };
 
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mousedown', onMouseDown);
+    const onTouchStart = (e) => {
+      if (e.touches && e.touches.length > 0) {
+        const touch = e.touches[0];
+        spawnBurst(touch.clientX, touch.clientY);
+      }
+    };
+
+    if (isTouch) {
+      window.addEventListener('touchstart', onTouchStart, { passive: true });
+    } else {
+      window.addEventListener('mousemove', onMouseMove);
+      window.addEventListener('mousedown', onMouseDown);
+    }
 
     // Colour palettes
     const trailColors = ['#c084fc', '#a855f7', '#818cf8', '#6366f1', '#e9d5ff', '#ffffff'];
     const burstColors = ['#fbbf24', '#f59e0b', '#fef3c7', '#ffffff', '#e9d5ff', '#c084fc', '#e879f9'];
     const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-    // Trail sparkles while moving
+    // Trail sparkles while moving (desktop only)
     function spawnTrail(x, y, count) {
       for (let i = 0; i < count; i++) {
         particles.push({
@@ -68,7 +77,7 @@ export default function MagicalCursor() {
       }
     }
 
-    // Radial burst on click
+    // Radial burst on click/tap
     function spawnBurst(x, y) {
       for (let i = 0; i < 26; i++) {
         const angle = (Math.PI * 2 * i) / 26 + (Math.random() - 0.5) * 0.35;
@@ -91,7 +100,7 @@ export default function MagicalCursor() {
       );
     }
 
-    // Idle orbiting sparkles
+    // Idle orbiting sparkles (desktop only)
     function spawnOrbit() {
       particles.push({
         x: 0, y: 0, vx: 0, vy: 0,
@@ -122,46 +131,48 @@ export default function MagicalCursor() {
       animId = requestAnimationFrame(animate);
       const now = timestamp || 0;
 
-      // Smooth easing
-      currentX += (targetX - currentX) * 0.15;
-      currentY += (targetY - currentY) * 0.15;
+      if (!isTouch) {
+        // Smooth easing
+        currentX += (targetX - currentX) * 0.15;
+        currentY += (targetY - currentY) * 0.15;
 
-      const speed = Math.hypot(currentX - prevX, currentY - prevY);
-      const isIdle = (now - lastMoveTime) > 500;
+        const speed = Math.hypot(currentX - prevX, currentY - prevY);
+        const isIdle = (now - lastMoveTime) > 500;
 
-      // Trail while moving
-      if (speed > 1.2) {
-        if (now - lastTrailTime > 35) {
-          spawnTrail(currentX, currentY, 1);
-          lastTrailTime = now;
-        }
-      }
-
-      // Orbit while idle
-      if (isIdle) {
-        const orbitCount = particles.filter(p => p.type === 'orbit').length;
-        if (orbitCount < 5 && Math.random() < 0.06) {
-          spawnOrbit();
-        }
-      }
-
-      // Scatter orbits when mouse moves
-      if (!isIdle && speed > 1) {
-        for (let i = particles.length - 1; i >= 0; i--) {
-          const p = particles[i];
-          if (p.type === 'orbit') {
-            p.type = 'trail';
-            p.x = currentX + Math.cos(p.orbitAngle) * p.orbitRadius;
-            p.y = currentY + Math.sin(p.orbitAngle) * p.orbitRadius;
-            p.vx = Math.cos(p.orbitAngle) * 1.3;
-            p.vy = Math.sin(p.orbitAngle) * 1.3;
-            p.decay = 0.03;
+        // Trail while moving
+        if (speed > 1.2) {
+          if (now - lastTrailTime > 35) {
+            spawnTrail(currentX, currentY, 1);
+            lastTrailTime = now;
           }
         }
-      }
 
-      prevX = currentX;
-      prevY = currentY;
+        // Orbit while idle
+        if (isIdle) {
+          const orbitCount = particles.filter(p => p.type === 'orbit').length;
+          if (orbitCount < 5 && Math.random() < 0.06) {
+            spawnOrbit();
+          }
+        }
+
+        // Scatter orbits when mouse moves
+        if (!isIdle && speed > 1) {
+          for (let i = particles.length - 1; i >= 0; i--) {
+            const p = particles[i];
+            if (p.type === 'orbit') {
+              p.type = 'trail';
+              p.x = currentX + Math.cos(p.orbitAngle) * p.orbitRadius;
+              p.y = currentY + Math.sin(p.orbitAngle) * p.orbitRadius;
+              p.vx = Math.cos(p.orbitAngle) * 1.3;
+              p.vy = Math.sin(p.orbitAngle) * 1.3;
+              p.decay = 0.03;
+            }
+          }
+        }
+
+        prevX = currentX;
+        prevY = currentY;
+      }
 
       // Draw
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -253,12 +264,14 @@ export default function MagicalCursor() {
     return () => {
       cancelAnimationFrame(animId);
       window.removeEventListener('resize', resize);
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('mousedown', onMouseDown);
+      if (isTouch) {
+        window.removeEventListener('touchstart', onTouchStart);
+      } else {
+        window.removeEventListener('mousemove', onMouseMove);
+        window.removeEventListener('mousedown', onMouseDown);
+      }
     };
   }, [isTouch]);
-
-  if (isTouch) return null;
 
   return (
     <canvas
