@@ -24,15 +24,15 @@ import {
 } from 'lucide-react';
 
 export default function AdminPortalModal() {
-  const { isAdminOpen, setIsAdminOpen, formatPrice, products, addProduct, orders, setOrders, appointments } = useApp();
+  const { isAdminOpen, setIsAdminOpen, formatPrice, products, addProduct, orders, setOrders, appointments, traffic } = useApp();
   const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' | 'orders' | 'inventory' | 'appointments' | 'new-product'
   const [trafficPeriod, setTrafficPeriod] = useState('today');
 
   const trafficData = {
-    today: { visitors: '1,280', change: '+12.4%' },
-    week: { visitors: '8,420', change: '+18.1%' },
-    month: { visitors: '34,190', change: '+22.5%' },
-    allTime: { visitors: '148,200', change: '+45.8%' },
+    today: { visitors: traffic.today.toLocaleString(), change: '+12.4%' },
+    week: { visitors: traffic.week.toLocaleString(), change: '+18.1%' },
+    month: { visitors: traffic.month.toLocaleString(), change: '+22.5%' },
+    allTime: { visitors: traffic.allTime.toLocaleString(), change: '+45.8%' },
   };
 
   // Live Inventory State (starts empty as requested)
