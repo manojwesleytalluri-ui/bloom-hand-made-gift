@@ -141,7 +141,16 @@ export default function FooterSection() {
 
       {/* Footer Bottom Bar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-pearl-400 gap-4">
-        <p>© 2026 Bloom Hand Made Gift. All Rights Reserved. Designed for ₹10 Lakh Luxury Standard.</p>
+        <p>
+          © 2026 Bloom Hand Made Gift. All Rights Reserved. Designed for ₹10 Lakh Luxury Standard.
+          <button
+            onClick={() => setIsAdminOpen(true)}
+            className="ml-2 text-[9px] text-pearl-500/15 hover:text-gold-400/80 transition-colors cursor-default select-none font-sans"
+            title="Sovereign VIP Admin Atelier"
+          >
+            • Atelier
+          </button>
+        </p>
         
         {/* Payment Icons Simulation */}
         <div className="flex items-center gap-3 text-[10px] tracking-widest uppercase text-pearl-300 font-serif">

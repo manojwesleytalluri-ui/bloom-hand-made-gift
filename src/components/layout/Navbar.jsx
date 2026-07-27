@@ -255,14 +255,7 @@ export default function Navbar() {
               Register
             </button>
 
-            {/* Admin Portal Button */}
-            <button
-              onClick={() => setIsAdminOpen(true)}
-              className="px-3.5 py-1.5 rounded-full bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 hover:bg-emerald-900/80 text-[11px] uppercase tracking-wider font-semibold transition-all whitespace-nowrap flex items-center gap-1"
-              title="Open VIP Admin Portal"
-            >
-              <span>👑 Admin</span>
-            </button>
+
 
             {/* Book Now Button */}
             <button
@@ -364,15 +357,7 @@ export default function Navbar() {
             ✨ Book VIP Consultation Now
           </button>
 
-          <button
-            onClick={() => {
-              setIsAdminOpen(true);
-              setMobileMenuOpen(false);
-            }}
-            className="w-full py-3 rounded-full bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 font-serif font-bold text-xs uppercase tracking-wider text-center flex items-center justify-center gap-1.5 hover:bg-emerald-900/80 transition-colors"
-          >
-            <span>👑 VIP Admin Portal</span>
-          </button>
+
 
           <div className="flex flex-col space-y-3 pt-2">
             {navLinks.map((link) => (
