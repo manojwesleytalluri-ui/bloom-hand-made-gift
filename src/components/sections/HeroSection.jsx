@@ -24,15 +24,15 @@ export default function HeroSection() {
           {/* Left Hero Content */}
           <div className="lg:col-span-6 space-y-8 text-center lg:text-left">
             {/* Top Luxury Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-panel border-gold-500/40 text-gold-300 text-xs font-medium uppercase tracking-widest shadow-gold-sm">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-panel border-gold-500/40 text-gold-300 text-[10px] sm:text-xs font-medium uppercase tracking-widest shadow-gold-sm">
               <Sparkles className="w-3.5 h-3.5 text-gold-400 animate-pulse" />
               <span>Haute Couture Floral Atelier</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-gold-400"></span>
-              <span className="text-pearl-300/80">Paris • Dubai • London • Mumbai</span>
+              <span className="hidden sm:inline w-1.5 h-1.5 rounded-full bg-gold-400"></span>
+              <span className="hidden sm:inline text-pearl-300/80">Paris • Dubai • London • Mumbai</span>
             </div>
 
             {/* Main Headline */}
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif font-bold text-pearl-50 leading-[1.15] tracking-tight">
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-serif font-bold text-pearl-50 leading-[1.15] tracking-tight">
               Crafting <span className="text-gold-gradient italic font-normal">Unforgettable</span> Expressions of Luxury
             </h1>
 
@@ -72,18 +72,18 @@ export default function HeroSection() {
             </div>
 
             {/* Brand Stats */}
-            <div className="grid grid-cols-3 gap-4 pt-6 border-t border-gold-500/20 text-center lg:text-left">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-4 pt-6 border-t border-gold-500/20 text-center lg:text-left">
               <div>
                 <span className="block font-serif text-2xl lg:text-3xl font-bold text-gold-gradient">100%</span>
-                <span className="text-[11px] uppercase tracking-wider text-pearl-300/70">Farm Fresh Rare Stems</span>
+                <span className="text-[10px] sm:text-[11px] uppercase tracking-wider text-pearl-300/70">Farm Fresh Rare Stems</span>
               </div>
               <div>
                 <span className="block font-serif text-2xl lg:text-3xl font-bold text-gold-gradient">2-Hour</span>
-                <span className="text-[11px] uppercase tracking-wider text-pearl-300/70">VIP White Glove Delivery</span>
+                <span className="text-[10px] sm:text-[11px] uppercase tracking-wider text-pearl-300/70">VIP White Glove Delivery</span>
               </div>
               <div>
                 <span className="block font-serif text-2xl lg:text-3xl font-bold text-gold-gradient">5 Years</span>
-                <span className="text-[11px] uppercase tracking-wider text-pearl-300/70">Eternal Rose Cloches</span>
+                <span className="text-[10px] sm:text-[11px] uppercase tracking-wider text-pearl-300/70">Eternal Rose Cloches</span>
               </div>
             </div>
           </div>

@@ -55,14 +55,14 @@ export default function TestimonialsSection() {
               </p>
 
               {/* Author Details */}
-              <div className="flex items-center justify-between pt-6 border-t border-gold-500/20">
-                <div className="flex items-center gap-4">
+              <div className="flex flex-col sm:flex-row items-center justify-between pt-6 border-t border-gold-500/20 gap-6 sm:gap-4">
+                <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
                   <img
                     src={active.avatar}
                     alt={active.name}
                     className="w-14 h-14 rounded-full object-cover border-2 border-gold-400 shadow-gold-sm"
                   />
-                  <div>
+                  <div className="flex flex-col items-center sm:items-start">
                     <h4 className="font-serif font-bold text-base text-pearl-50 flex items-center gap-1.5">
                       <span>{active.name}</span>
                       <CheckCircle2 className="w-4 h-4 text-gold-400" />

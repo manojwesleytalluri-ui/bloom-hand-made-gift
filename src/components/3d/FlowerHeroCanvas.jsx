@@ -246,7 +246,7 @@ export default function FlowerHeroCanvas({ preset = 'gold', setPreset }) {
   };
 
   return (
-    <div className="w-full h-[520px] lg:h-[680px] relative rounded-3xl overflow-hidden bg-charcoal-950/40 backdrop-blur-md border border-mutedGold-500/20 shadow-2xl group flex flex-col justify-between p-6 sm:p-8 select-none">
+    <div className="w-full h-[340px] sm:h-[500px] lg:h-[680px] relative rounded-3xl overflow-hidden bg-charcoal-950/40 backdrop-blur-md border border-mutedGold-500/20 shadow-2xl group flex flex-col justify-between p-6 sm:p-8 select-none">
       
       {/* 3D WebGL Canvas Layer (Background environment) */}
       {hasWebGL && (
@@ -290,7 +290,7 @@ export default function FlowerHeroCanvas({ preset = 'gold', setPreset }) {
 
       {/* Main Image Slider Layer */}
       <div className="relative z-10 flex-1 w-full flex items-center justify-center">
-        <div className="relative w-60 h-60 sm:w-72 sm:h-72 lg:w-[380px] lg:h-[380px] flex items-center justify-center">
+        <div className="relative w-44 h-44 sm:w-72 sm:h-72 lg:w-[380px] lg:h-[380px] flex items-center justify-center">
           <AnimatePresence initial={false} custom={direction} mode="popLayout">
             <motion.div
               key={activeIndex}

@@ -225,7 +225,7 @@ export default function FeaturedBouquetsSection() {
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal-950/85 backdrop-blur-2xl"
             onClick={(e) => e.target === e.currentTarget && setQuickViewProduct(null)}
           >
-            <div className="relative max-w-3xl w-full rounded-[2rem] overflow-hidden bg-charcoal-900/90 backdrop-blur-xl border border-mutedGold-500/30 shadow-2xl shadow-gold-500/10">
+            <div className="relative max-w-3xl w-full rounded-[2rem] overflow-hidden bg-charcoal-900/90 backdrop-blur-xl border border-mutedGold-500/30 shadow-2xl shadow-gold-500/10 max-h-[90vh] overflow-y-auto">
 
               {/* Close Button */}
               <button

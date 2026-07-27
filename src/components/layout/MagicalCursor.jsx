@@ -8,9 +8,15 @@ import React, { useEffect, useRef } from 'react';
 export default function MagicalCursor() {
   const canvasRef = useRef(null);
 
+  const isTouch = typeof window !== 'undefined' && (window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window || navigator.maxTouchPoints > 0);
+
   useEffect(() => {
+    if (isTouch) return;
+
     const canvas = canvasRef.current;
+    if (!canvas) return;
     const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
     let targetX = -100, targetY = -100;
     let currentX = -100, currentY = -100;
@@ -250,7 +256,9 @@ export default function MagicalCursor() {
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('mousedown', onMouseDown);
     };
-  }, []);
+  }, [isTouch]);
+
+  if (isTouch) return null;
 
   return (
     <canvas

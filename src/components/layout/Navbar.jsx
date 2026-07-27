@@ -43,6 +43,17 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileMenuOpen]);
+
   const totalCartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   const navLinks = [
@@ -130,7 +141,7 @@ export default function Navbar() {
                 </defs>
               </svg>
             </div>
-            <div className="flex flex-col">
+            <div className="hidden sm:flex flex-col">
               <span className="font-serif text-sm sm:text-base font-bold tracking-wide text-gold-gradient whitespace-nowrap leading-none">
                 Bloom Hand Made Gift
               </span>
@@ -154,7 +165,7 @@ export default function Navbar() {
           </nav>
 
           {/* Right Action Bar */}
-          <div className="hidden lg:flex items-center gap-2.5 shrink-0">
+          <div className="hidden 2xl:flex items-center gap-2.5 shrink-0">
             
             {/* Currency Selector */}
             <div className="relative group">
@@ -265,10 +276,35 @@ export default function Navbar() {
           </div>
 
           {/* Mobile & Tablet Trigger */}
-          <div className="flex 2xl:hidden items-center gap-2">
+          <div className="flex 2xl:hidden items-center gap-1.5 sm:gap-2">
+            {/* Search */}
+            <button
+              onClick={() => setIsSearchOpen(true)}
+              className="p-2 rounded-full border border-gold-500/30 text-gold-400 hover:text-gold-300 transition-colors"
+              title="Search Catalog"
+            >
+              <Search className="w-4 h-4" />
+            </button>
+
+            {/* Wishlist */}
+            <button
+              onClick={() => setIsWishlistOpen(true)}
+              className="relative p-2 rounded-full border border-gold-500/30 text-gold-400 hover:text-gold-300 transition-colors"
+              title="Wishlist"
+            >
+              <Heart className="w-4 h-4" />
+              {wishlist.length > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-gold-500 text-obsidian-950 text-[9px] font-bold flex items-center justify-center">
+                  {wishlist.length}
+                </span>
+              )}
+            </button>
+
+            {/* Cart */}
             <button
               onClick={() => setIsCartOpen(true)}
-              className="relative p-2 rounded-full border border-gold-500/30 text-gold-400"
+              className="relative p-2 rounded-full border border-gold-500/30 text-gold-400 hover:text-gold-300 transition-colors"
+              title="Shopping Cart"
             >
               <ShoppingBag className="w-4 h-4" />
               {totalCartCount > 0 && (
@@ -278,11 +314,13 @@ export default function Navbar() {
               )}
             </button>
 
+            {/* Hamburger Menu */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-full border border-gold-500/30 text-gold-400"
+              className="p-2 rounded-full border border-gold-500/30 text-gold-400 hover:text-gold-300 transition-colors"
+              title="Toggle Menu"
             >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {mobileMenuOpen ? <X className="w-4 h-4 sm:w-5 sm:h-5" /> : <Menu className="w-4 h-4 sm:w-5 sm:h-5" />}
             </button>
           </div>
 
@@ -291,7 +329,7 @@ export default function Navbar() {
 
       {/* Mobile & Mid-Screen Menu Drawer */}
       {mobileMenuOpen && (
-        <div className="2xl:hidden pointer-events-auto glass-panel border border-gold-500/40 rounded-3xl p-6 mt-3 space-y-4 shadow-gold-lg animate-fadeIn">
+        <div className="2xl:hidden pointer-events-auto glass-panel border border-gold-500/40 rounded-3xl p-6 mt-3 space-y-4 shadow-gold-lg animate-fadeIn max-h-[75vh] overflow-y-auto">
           
           <div className="grid grid-cols-2 gap-3 pb-4 border-b border-gold-500/20">
             <button

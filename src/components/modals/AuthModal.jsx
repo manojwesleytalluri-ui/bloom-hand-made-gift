@@ -27,7 +27,7 @@ export default function AuthModal() {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-obsidian-950/85 backdrop-blur-xl animate-fadeIn">
-      <div className="glass-panel border border-gold-500/40 rounded-3xl max-w-md w-full p-8 relative space-y-6 shadow-gold-lg">
+      <div className="glass-panel border border-gold-500/40 rounded-3xl max-w-md w-full p-6 sm:p-8 relative space-y-6 shadow-gold-lg max-h-[90vh] overflow-y-auto">
         <button onClick={() => setIsAuthOpen(false)} className="absolute top-4 right-4 text-pearl-300 hover:text-gold-400">
           <X className="w-5 h-5" />
         </button>

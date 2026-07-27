@@ -22,7 +22,7 @@ export default function WishlistDrawer() {
     <div className="fixed inset-0 z-50 overflow-hidden bg-obsidian-950/80 backdrop-blur-md animate-fadeIn">
       <div className="absolute inset-0" onClick={() => setIsWishlistOpen(false)}></div>
 
-      <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
+      <div className="fixed inset-y-0 right-0 max-w-full flex pl-4 sm:pl-10">
         <div className="w-screen max-w-md glass-panel border-l border-gold-500/40 p-6 flex flex-col justify-between shadow-gold-lg">
           
           <div className="flex items-center justify-between pb-4 border-b border-gold-500/20">
