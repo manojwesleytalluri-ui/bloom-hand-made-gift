@@ -3,7 +3,7 @@ import { MapPin, Phone, Mail, Send, Sparkles, Globe, Shield, Heart } from 'lucid
 import { useApp } from '../../context/AppContext';
 
 export default function FooterSection() {
-  const { isAdminOpen } = useApp();
+  const { isAdminOpen, setIsAdminOpen } = useApp();
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [showMapModal, setShowMapModal] = useState(false);
