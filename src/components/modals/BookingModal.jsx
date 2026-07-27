@@ -3,7 +3,7 @@ import { useApp } from '../../context/AppContext';
 import { X, Calendar, Clock, Sparkles, CheckCircle2, User, Phone, MapPin } from 'lucide-react';
 
 export default function BookingModal() {
-  const { isBookingOpen, setIsBookingOpen } = useApp();
+  const { isBookingOpen, setIsBookingOpen, addAppointment } = useApp();
   const [bookingDate, setBookingDate] = useState('2026-07-28');
   const [bookingTime, setBookingTime] = useState('14:00 PM');
   const [consultationType, setConsultationType] = useState('In-Person Flagship Atelier');
@@ -14,6 +14,17 @@ export default function BookingModal() {
 
   const handleBook = (e) => {
     e.preventDefault();
+    
+    const newAppt = {
+      id: `CONF-${Math.floor(1000 + Math.random() * 9000)}`,
+      client: 'Lady Eleanor Vance',
+      occasion: occasion,
+      date: bookingDate,
+      time: bookingTime,
+      format: consultationType
+    };
+    addAppointment(newAppt);
+
     setIsBooked(true);
     setTimeout(() => {
       setIsBooked(false);

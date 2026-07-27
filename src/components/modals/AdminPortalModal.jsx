@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 
 export default function AdminPortalModal() {
-  const { isAdminOpen, setIsAdminOpen, formatPrice, products, addProduct, orders, setOrders } = useApp();
+  const { isAdminOpen, setIsAdminOpen, formatPrice, products, addProduct, orders, setOrders, appointments } = useApp();
   const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' | 'orders' | 'inventory' | 'appointments' | 'new-product'
   const [trafficPeriod, setTrafficPeriod] = useState('today');
 
@@ -35,14 +35,34 @@ export default function AdminPortalModal() {
     allTime: { visitors: '148,200', change: '+45.8%' },
   };
 
-  // Mock Inventory State
-  const [inventory, setInventory] = useState([
-    { id: 'st-1', name: 'Ecuadorian Grand Prix Red Roses', category: 'Roses', stock: 1850, unitCostUSD: 2.50, status: 'In Stock' },
-    { id: 'st-2', name: 'White Phalaenopsis Orchids', category: 'Orchids', stock: 420, unitCostUSD: 6.00, status: 'In Stock' },
-    { id: 'st-3', name: 'French Snow Peonies', category: 'Peonies', stock: 680, unitCostUSD: 4.00, status: 'In Stock' },
-    { id: 'st-4', name: 'Rare Midnight Black Orchids', category: 'Orchids', stock: 95, unitCostUSD: 12.00, status: 'Low Stock' },
-    { id: 'st-5', name: 'Golden Dutch Tulips', category: 'Tulips', stock: 1200, unitCostUSD: 3.20, status: 'In Stock' },
-  ]);
+  // Live Inventory State (starts empty as requested)
+  const [inventory, setInventory] = useState([]);
+  
+  // Inventory Form State
+  const [invName, setInvName] = useState('');
+  const [invCat, setInvCat] = useState('');
+  const [invStock, setInvStock] = useState('');
+  const [invCost, setInvCost] = useState('');
+
+  const handleAddInventory = (e) => {
+    e.preventDefault();
+    const count = parseInt(invStock) || 0;
+    const newItem = {
+      id: `st-${Date.now()}`,
+      name: invName,
+      category: invCat,
+      stock: count,
+      unitCostUSD: parseFloat(invCost) || 0.00,
+      status: count < 100 ? 'Low Stock' : 'In Stock'
+    };
+    setInventory((prev) => [...prev, newItem]);
+    setInvName('');
+    setInvCat('');
+    setInvStock('');
+    setInvCost('');
+  };
+
+
 
   // New Product Form State
   const [newTitle, setNewTitle] = useState('');
@@ -232,8 +252,8 @@ export default function AdminPortalModal() {
                     <span>VIP Consultations</span>
                     <Calendar className="w-4 h-4 text-gold-400" />
                   </div>
-                  <span className="text-2xl font-serif font-bold text-pearl-50 block">6 Booked</span>
-                  <span className="text-[10px] text-gold-300 font-medium">3 Royal Wedding Galas</span>
+                  <span className="text-2xl font-serif font-bold text-pearl-50 block">{appointments.length} Booked</span>
+                  <span className="text-[10px] text-gold-300 font-medium">Live bookings from consultations desk</span>
                 </div>
 
               </div>
@@ -383,35 +403,100 @@ export default function AdminPortalModal() {
                 <span className="text-xs text-emerald-400 font-medium">All stems climate-controlled at 4°C</span>
               </div>
 
+              {/* Add Inventory Item Inline Form */}
+              <form onSubmit={handleAddInventory} className="glass-panel p-4 rounded-2xl border border-gold-500/20 grid grid-cols-1 sm:grid-cols-5 gap-3 items-end">
+                <div className="sm:col-span-2">
+                  <label className="text-[10px] uppercase font-bold text-gold-400 block mb-1">Stem Variety Name:</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Ecuadorian Grand Prix Red Roses"
+                    className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-2.5 text-xs outline-none text-pearl-100 placeholder-pearl-400/50"
+                    value={invName}
+                    onChange={(e) => setInvName(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] uppercase font-bold text-gold-400 block mb-1">Category:</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Roses"
+                    className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-2.5 text-xs outline-none text-pearl-100 placeholder-pearl-400/50"
+                    value={invCat}
+                    onChange={(e) => setInvCat(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] uppercase font-bold text-gold-400 block mb-1">Initial Stock:</label>
+                  <input
+                    type="number"
+                    required
+                    placeholder="e.g. 500"
+                    className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-2.5 text-xs outline-none text-pearl-100 placeholder-pearl-400/50"
+                    value={invStock}
+                    onChange={(e) => setInvStock(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] uppercase font-bold text-gold-400 block mb-1">Unit Cost ($):</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      step="0.01"
+                      required
+                      placeholder="e.g. 2.50"
+                      className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-2.5 text-xs outline-none text-pearl-100 placeholder-pearl-400/50"
+                      value={invCost}
+                      onChange={(e) => setInvCost(e.target.value)}
+                    />
+                    <button
+                      type="submit"
+                      className="px-4 py-2.5 rounded-xl bg-gold-gradient text-obsidian-950 font-serif font-bold text-xs uppercase hover:scale-105 active:scale-95 transition-all whitespace-nowrap"
+                    >
+                      Add
+                    </button>
+                  </div>
+                </div>
+              </form>
+
               <div className="glass-panel rounded-2xl overflow-hidden border border-gold-500/20">
-                <table className="w-full text-left text-xs text-pearl-200">
-                  <thead className="bg-obsidian-900 border-b border-gold-500/20 text-gold-400 uppercase font-serif">
-                    <tr>
-                      <th className="p-3.5">Stem Variety</th>
-                      <th className="p-3.5">Category</th>
-                      <th className="p-3.5">Current Stock</th>
-                      <th className="p-3.5">Unit Cost</th>
-                      <th className="p-3.5">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gold-500/10">
-                    {inventory.map((item) => (
-                      <tr key={item.id} className="hover:bg-gold-500/5 transition-colors">
-                        <td className="p-3.5 font-semibold text-pearl-50">{item.name}</td>
-                        <td className="p-3.5 text-pearl-300">{item.category}</td>
-                        <td className="p-3.5 font-bold text-gold- gradient">{item.stock} Stems</td>
-                        <td className="p-3.5">{formatPrice(item.unitCostUSD)}</td>
-                        <td className="p-3.5">
-                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                            item.status === 'Low Stock' ? 'bg-red-950 text-red-400 border border-red-500/40' : 'bg-emerald-950 text-emerald-300 border border-emerald-500/40'
-                          }`}>
-                            {item.status}
-                          </span>
-                        </td>
+                {inventory.length === 0 ? (
+                  <div className="text-center py-16 space-y-3">
+                    <Boxes className="w-12 h-12 text-gold-500/30 mx-auto" />
+                    <p className="font-serif text-pearl-200 text-base">Your climate-controlled inventory is empty.</p>
+                    <p className="text-xs text-pearl-400 font-light">Add new stem varieties using the form above to populate the ledger.</p>
+                  </div>
+                ) : (
+                  <table className="w-full text-left text-xs text-pearl-200">
+                    <thead className="bg-obsidian-900 border-b border-gold-500/20 text-gold-400 uppercase font-serif">
+                      <tr>
+                        <th className="p-3.5">Stem Variety</th>
+                        <th className="p-3.5">Category</th>
+                        <th className="p-3.5">Current Stock</th>
+                        <th className="p-3.5">Unit Cost</th>
+                        <th className="p-3.5">Status</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-gold-500/10">
+                      {inventory.map((item) => (
+                        <tr key={item.id} className="hover:bg-gold-500/5 transition-colors">
+                          <td className="p-3.5 font-semibold text-pearl-50">{item.name}</td>
+                          <td className="p-3.5 text-pearl-300">{item.category}</td>
+                          <td className="p-3.5 font-bold text-gold-gradient">{item.stock} Stems</td>
+                          <td className="p-3.5">{formatPrice(item.unitCostUSD)}</td>
+                          <td className="p-3.5">
+                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                              item.status === 'Low Stock' ? 'bg-red-950 text-red-400 border border-red-500/40' : 'bg-emerald-950 text-emerald-300 border border-emerald-500/40'
+                            }`}>
+                              {item.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
               </div>
 
               {/* Published Bouquets Catalog */}
@@ -460,23 +545,24 @@ export default function AdminPortalModal() {
               <h4 className="font-serif font-bold text-lg text-pearl-50">Scheduled VIP Consultations</h4>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="glass-panel p-5 rounded-2xl border border-gold-500/20 space-y-2">
-                  <span className="text-[10px] uppercase font-bold text-gold-400">Royal Wedding Gala</span>
-                  <h5 className="font-serif font-bold text-base text-pearl-50">Princess Sophia Al-Mansoor</h5>
-                  <p className="text-xs text-pearl-300 font-light">Date: 2026-07-28 • 14:00 PM (In-Person Flagship Atelier)</p>
-                  <span className="px-3 py-1 rounded-full bg-gold-500/20 text-gold-300 text-[10px] inline-block font-bold">
-                    Master Architect Assigned
-                  </span>
-                </div>
-
-                <div className="glass-panel p-5 rounded-2xl border border-gold-500/20 space-y-2">
-                  <span className="text-[10px] uppercase font-bold text-gold-400">Private Yacht Installation</span>
-                  <h5 className="font-serif font-bold text-base text-pearl-50">Sir Arthur Pendelton</h5>
-                  <p className="text-xs text-pearl-300 font-light">Date: 2026-07-29 • 17:30 PM (Private Video Call)</p>
-                  <span className="px-3 py-1 rounded-full bg-emerald-900/60 text-emerald-300 text-[10px] inline-block font-bold">
-                    Video Desk Ready
-                  </span>
-                </div>
+                {appointments.length === 0 ? (
+                  <div className="text-center py-16 space-y-3 border border-gold-500/10 rounded-2xl bg-obsidian-900/40 w-full col-span-2">
+                    <Calendar className="w-12 h-12 text-gold-500/30 mx-auto" />
+                    <p className="font-serif text-pearl-200 text-base">No VIP consultations scheduled yet.</p>
+                    <p className="text-xs text-pearl-400 font-light">Book appointments using the consultation calendar on the shop page.</p>
+                  </div>
+                ) : (
+                  appointments.map((appt) => (
+                    <div key={appt.id} className="glass-panel p-5 rounded-2xl border border-gold-500/20 space-y-2">
+                      <span className="text-[10px] uppercase font-bold text-gold-400">{appt.occasion}</span>
+                      <h5 className="font-serif font-bold text-base text-pearl-50">{appt.client}</h5>
+                      <p className="text-xs text-pearl-300 font-light">Date: {appt.date} • {appt.time} ({appt.format})</p>
+                      <span className="px-3 py-1 rounded-full bg-gold-500/20 text-gold-300 text-[10px] inline-block font-bold">
+                        Master Architect Assigned
+                      </span>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           )}

@@ -45,6 +45,12 @@ export const AppProvider = ({ children }) => {
     setOrders((prev) => [newOrder, ...prev]);
   };
 
+  // Live VIP Appointments State (starts empty as requested)
+  const [appointments, setAppointments] = useState([]);
+  const addAppointment = (newAppt) => {
+    setAppointments((prev) => [newAppt, ...prev]);
+  };
+
   // Modals & Drawers State
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
@@ -233,6 +239,9 @@ export const AppProvider = ({ children }) => {
         orders,
         setOrders,
         addOrder,
+        appointments,
+        setAppointments,
+        addAppointment,
         searchQuery,
         setSearchQuery,
         selectedOccasion,
