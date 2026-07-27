@@ -24,42 +24,16 @@ import {
 } from 'lucide-react';
 
 export default function AdminPortalModal() {
-  const { isAdminOpen, setIsAdminOpen, formatPrice, products, addProduct } = useApp();
+  const { isAdminOpen, setIsAdminOpen, formatPrice, products, addProduct, orders, setOrders } = useApp();
   const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' | 'orders' | 'inventory' | 'appointments' | 'new-product'
+  const [trafficPeriod, setTrafficPeriod] = useState('today');
 
-  // Mock Orders State
-  const [orders, setOrders] = useState([
-    {
-      id: 'BLM-889421',
-      client: 'Lady Eleanor Vance',
-      product: 'The Sovereign Imperial Red Velvet Roses (100 Stems)',
-      amountUSD: 450,
-      date: '2026-07-26',
-      timeSlot: 'VIP 2-Hour Express (14:00 - 16:00)',
-      status: 'Out for Delivery',
-      location: 'New York Penthouse'
-    },
-    {
-      id: 'BLM-994102',
-      client: 'Princess Sophia Al-Mansoor',
-      product: 'Royal Palais Bridal Orchid & Peony Cascade',
-      amountUSD: 680,
-      date: '2026-07-27',
-      timeSlot: 'Sunset Champagne Delivery (18:00)',
-      status: 'In Preparation',
-      location: 'Dubai Downtown Palace'
-    },
-    {
-      id: 'BLM-772109',
-      client: 'Sir Arthur Pendelton',
-      product: 'The Dior Grand Gala Champagne & Flowers Hamper',
-      amountUSD: 1200,
-      date: '2026-07-26',
-      timeSlot: 'Morning Slot (09:00 - 11:00)',
-      status: 'Quality Checked',
-      location: 'London Mayfair Estate'
-    }
-  ]);
+  const trafficData = {
+    today: { visitors: '1,280', change: '+12.4%' },
+    week: { visitors: '8,420', change: '+18.1%' },
+    month: { visitors: '34,190', change: '+22.5%' },
+    allTime: { visitors: '148,200', change: '+45.8%' },
+  };
 
   // Mock Inventory State
   const [inventory, setInventory] = useState([
@@ -200,7 +174,7 @@ export default function AdminPortalModal() {
             <div className="space-y-6 animate-fadeIn">
               
               {/* KPI Cards Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
                 
                 <div className="glass-panel p-5 rounded-2xl border border-gold-500/30 space-y-2">
                   <div className="flex items-center justify-between text-xs text-pearl-300">
@@ -218,8 +192,30 @@ export default function AdminPortalModal() {
                     <span>Active VIP Orders</span>
                     <Package className="w-4 h-4 text-gold-400" />
                   </div>
-                  <span className="text-2xl font-serif font-bold text-pearl-50 block">18 Orders</span>
-                  <span className="text-[10px] text-gold-300 font-medium">4 preparing • 3 out for delivery</span>
+                  <span className="text-2xl font-serif font-bold text-pearl-50 block">{orders.length} Orders</span>
+                  <span className="text-[10px] text-gold-300 font-medium">
+                    {orders.filter(o => o.status === 'In Preparation').length} preparing • {orders.filter(o => o.status === 'Out for Delivery').length} out
+                  </span>
+                </div>
+
+                <div className="glass-panel p-5 rounded-2xl border border-gold-500/30 space-y-2">
+                  <div className="flex items-center justify-between text-xs text-pearl-300">
+                    <span>Website Visitors</span>
+                    <select
+                      value={trafficPeriod}
+                      onChange={(e) => setTrafficPeriod(e.target.value)}
+                      className="bg-obsidian-900 border border-gold-500/20 text-gold-300 text-[10px] rounded px-1.5 py-0.5 outline-none cursor-pointer font-serif font-bold"
+                    >
+                      <option value="today">Today</option>
+                      <option value="week">This Week</option>
+                      <option value="month">This Month</option>
+                      <option value="allTime">All Time</option>
+                    </select>
+                  </div>
+                  <span className="text-2xl font-serif font-bold text-pearl-50 block">
+                    {trafficData[trafficPeriod].visitors}
+                  </span>
+                  <span className="text-[10px] text-emerald-400 font-medium">↑ {trafficData[trafficPeriod].change} vs prev</span>
                 </div>
 
                 <div className="glass-panel p-5 rounded-2xl border border-gold-500/30 space-y-2">
@@ -326,47 +322,55 @@ export default function AdminPortalModal() {
               </div>
 
               <div className="space-y-3">
-                {orders.map((order) => (
-                  <div
-                    key={order.id}
-                    className="glass-panel p-5 rounded-2xl border border-gold-500/20 space-y-3"
-                  >
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gold-500/15 pb-3">
-                      <div>
-                        <span className="font-serif font-bold text-base text-gold-gradient">{order.id}</span>
-                        <span className="text-xs text-pearl-200 ml-3">Client: <strong>{order.client}</strong></span>
-                      </div>
-                      <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase font-serif ${
-                        order.status === 'Out for Delivery' ? 'bg-emerald-900/60 border border-emerald-500 text-emerald-300' : 'bg-gold-500/20 border border-gold-400 text-gold-300'
-                      }`}>
-                        {order.status}
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-pearl-300 font-light">
-                      <div><strong>Arrangement:</strong> {order.product}</div>
-                      <div><strong>Delivery Slot:</strong> {order.timeSlot}</div>
-                      <div><strong>Investment:</strong> <span className="font-serif font-bold text-gold-400">{formatPrice(order.amountUSD)}</span></div>
-                    </div>
-
-                    <div className="pt-2 flex flex-wrap items-center gap-2 border-t border-gold-500/10">
-                      <span className="text-[11px] text-pearl-400 font-medium">Update VIP Status:</span>
-                      {['In Preparation', 'Quality Checked', 'Out for Delivery', 'Delivered'].map((st) => (
-                        <button
-                          key={st}
-                          onClick={() => updateOrderStatus(order.id, st)}
-                          className={`px-3 py-1 rounded-full text-[10px] uppercase font-bold transition-all ${
-                            order.status === st
-                              ? 'bg-gold-500 text-obsidian-950'
-                              : 'bg-obsidian-900 border border-gold-500/20 text-pearl-300 hover:border-gold-500/40'
-                          }`}
-                        >
-                          {st}
-                        </button>
-                      ))}
-                    </div>
+                {orders.length === 0 ? (
+                  <div className="text-center py-16 space-y-3 border border-gold-500/10 rounded-2xl bg-obsidian-900/40">
+                    <Package className="w-12 h-12 text-gold-500/30 mx-auto" />
+                    <p className="font-serif text-pearl-200 text-base">No live orders received yet.</p>
+                    <p className="text-xs text-pearl-400 font-light">Acquire items from the boutique shop page to see orders populate here.</p>
                   </div>
-                ))}
+                ) : (
+                  orders.map((order) => (
+                    <div
+                      key={order.id}
+                      className="glass-panel p-5 rounded-2xl border border-gold-500/20 space-y-3"
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gold-500/15 pb-3">
+                        <div>
+                          <span className="font-serif font-bold text-base text-gold-gradient">{order.id}</span>
+                          <span className="text-xs text-pearl-200 ml-3">Client: <strong>{order.client}</strong></span>
+                        </div>
+                        <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase font-serif ${
+                          order.status === 'Out for Delivery' ? 'bg-emerald-900/60 border border-emerald-500 text-emerald-300' : 'bg-gold-500/20 border border-gold-400 text-gold-300'
+                        }`}>
+                          {order.status}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-pearl-300 font-light">
+                        <div><strong>Arrangement:</strong> {order.product}</div>
+                        <div><strong>Delivery Slot:</strong> {order.timeSlot}</div>
+                        <div><strong>Investment:</strong> <span className="font-serif font-bold text-gold-400">{formatPrice(order.amountUSD)}</span></div>
+                      </div>
+
+                      <div className="pt-2 flex flex-wrap items-center gap-2 border-t border-gold-500/10">
+                        <span className="text-[11px] text-pearl-400 font-medium">Update VIP Status:</span>
+                        {['In Preparation', 'Quality Checked', 'Out for Delivery', 'Delivered'].map((st) => (
+                          <button
+                            key={st}
+                            onClick={() => updateOrderStatus(order.id, st)}
+                            className={`px-3 py-1 rounded-full text-[10px] uppercase font-bold transition-all ${
+                              order.status === st
+                                ? 'bg-gold-500 text-obsidian-950'
+                                : 'bg-obsidian-900 border border-gold-500/20 text-pearl-300 hover:border-gold-500/40'
+                            }`}
+                          >
+                            {st}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           )}

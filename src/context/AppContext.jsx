@@ -39,6 +39,12 @@ export const AppProvider = ({ children }) => {
 
   const [wishlist, setWishlist] = useState(['bouq-2', 'bouq-4']);
 
+  // Live Orders State (starts empty as requested)
+  const [orders, setOrders] = useState([]);
+  const addOrder = (newOrder) => {
+    setOrders((prev) => [newOrder, ...prev]);
+  };
+
   // Modals & Drawers State
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
@@ -224,6 +230,9 @@ export const AppProvider = ({ children }) => {
         setQuickViewProduct,
         user,
         setUser,
+        orders,
+        setOrders,
+        addOrder,
         searchQuery,
         setSearchQuery,
         selectedOccasion,

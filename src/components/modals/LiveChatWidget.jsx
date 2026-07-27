@@ -9,6 +9,33 @@ export default function LiveChatWidget() {
     { sender: 'concierge', text: 'Good evening. Welcome to Bloom Hand Made Gift. How may our VIP Concierge assist your floral needs today?' }
   ]);
 
+  const [isTyping, setIsTyping] = useState(false);
+
+  const chatbotReplies = (query) => {
+    const q = query.toLowerCase();
+    if (q.includes('track') || q.includes('order')) {
+      setTimeout(() => setIsTrackingOpen(true), 1200);
+      return 'I can help you view your live order status right away! Opening the tracking window...';
+    }
+    if (q.includes('book') || q.includes('wedding') || q.includes('consult')) {
+      setTimeout(() => setIsBookingOpen(true), 1200);
+      return 'Opening our VIP Consultation Booking Desk for you now to schedule a private session...';
+    }
+    if (q.includes('price') || q.includes('cost') || q.includes('how much')) {
+      return 'Our signature collections start at $390 for our Premium Boxes and go up to $1,800 for custom-designed glass cloches. Delivery is included.';
+    }
+    if (q.includes('delivery') || q.includes('shipping')) {
+      return 'We offer VIP White-Glove hand delivery in Paris, London, Dubai, and Mumbai. Same-day delivery is available for orders placed before 12:00 PM.';
+    }
+    if (q.includes('botanical') || q.includes('flower') || q.includes('rose') || q.includes('peony')) {
+      return 'We source only the rarest flora, including Grand Prix Ecuadorian gold-accented roses, French snow peonies, and white Phalaenopsis orchids.';
+    }
+    if (q.includes('hello') || q.includes('hi') || q.includes('hey')) {
+      return 'Good evening. How may our VIP Concierge assist your luxury floral needs today?';
+    }
+    return "I'd be delighted to assist you with that. Our Master Floral Architect is reviewing your bespoke request. Would you like to book a private consultation?";
+  };
+
   const handleSend = (textToSend) => {
     const query = textToSend || inputMessage;
     if (!query) return;
@@ -16,18 +43,13 @@ export default function LiveChatWidget() {
     const newHistory = [...chatHistory, { sender: 'user', text: query }];
     setChatHistory(newHistory);
     setInputMessage('');
+    setIsTyping(true);
 
     setTimeout(() => {
-      let reply = 'Our Master Floral Architect is reviewing your request. Would you like to schedule a private consultation?';
-      if (query.toLowerCase().includes('track') || query.toLowerCase().includes('order')) {
-        reply = 'I can help you view your live order status right away!';
-        setIsTrackingOpen(true);
-      } else if (query.toLowerCase().includes('book') || query.toLowerCase().includes('wedding')) {
-        reply = 'Opening our VIP Consultation Booking Desk for you now...';
-        setIsBookingOpen(true);
-      }
+      setIsTyping(false);
+      const reply = chatbotReplies(query);
       setChatHistory([...newHistory, { sender: 'concierge', text: reply }]);
-    }, 800);
+    }, 1000);
   };
 
   return (
@@ -102,6 +124,14 @@ export default function LiveChatWidget() {
                 {msg.text}
               </div>
             ))}
+            
+            {isTyping && (
+              <div className="p-3 rounded-2xl max-w-[85%] bg-obsidian-900 border border-gold-500/20 text-gold-400 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-gold-400 animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-gold-400 animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-gold-400 animate-bounce" style={{ animationDelay: '300ms' }}></span>
+              </div>
+            )}
           </div>
 
           {/* Input Box */}

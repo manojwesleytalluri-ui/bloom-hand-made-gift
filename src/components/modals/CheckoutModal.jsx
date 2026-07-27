@@ -10,7 +10,8 @@ export default function CheckoutModal() {
     cart,
     cartTotalUSD,
     formatPrice,
-    setIsTrackingOpen
+    setIsTrackingOpen,
+    addOrder
   } = useApp();
 
   const [step, setStep] = useState(1);
@@ -36,6 +37,19 @@ export default function CheckoutModal() {
     setTimeout(() => {
       setIsProcessing(false);
       const generatedId = `BLM-${Math.floor(100000 + Math.random() * 900000)}`;
+      
+      const newOrder = {
+        id: generatedId,
+        client: 'Lady Eleanor Vance',
+        product: cart.map(item => `${item.name} (x${item.quantity})`).join(', '),
+        amountUSD: cartTotalUSD,
+        date: deliveryDate,
+        timeSlot: timeSlot,
+        status: 'In Preparation',
+        location: '740 Fifth Avenue, Penthouse 42B, New York, NY'
+      };
+      
+      addOrder(newOrder);
       setOrderId(generatedId);
       setStep(3);
       triggerConfetti();

@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
 import { MapPin, Phone, Mail, Send, Sparkles, Globe, Shield, Heart } from 'lucide-react';
+import { useApp } from '../../context/AppContext';
 
 export default function FooterSection() {
+  const { isAdminOpen } = useApp();
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [showMapModal, setShowMapModal] = useState(false);
+
+  if (isAdminOpen) return null;
 
   const handleSubscribe = (e) => {
     e.preventDefault();
