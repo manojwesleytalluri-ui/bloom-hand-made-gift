@@ -3,9 +3,11 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
-// Use "/" base on Vercel (auto-detected via VERCEL env var), "/bloom-hand-made-gift/" on GitHub Pages
+// Use "/" base on Vercel/Render (cloud), "/bloom-hand-made-gift/" on GitHub Pages (local build)
+const isCloudDeploy = process.env.VERCEL || process.env.RENDER || process.env.CI;
+
 export default defineConfig({
-  base: process.env.VERCEL ? "/" : "/bloom-hand-made-gift/",
+  base: isCloudDeploy ? "/" : "/bloom-hand-made-gift/",
   plugins: [
     react(),
     tailwindcss(),
