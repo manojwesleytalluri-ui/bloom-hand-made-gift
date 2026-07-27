@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Sparkles, Check, Sliders, Palette, FileText, ShoppingBag, Gift } from 'lucide-react';
+import { assetPath } from '../../utils/assetPath';
 
 export default function CustomBouquetBuilder() {
   const { formatPrice, addToCart } = useApp();
@@ -25,10 +26,10 @@ export default function CustomBouquetBuilder() {
 
   // Packaging options
   const packagingOptions = [
-    { name: 'Black Velvet Box', price: 60, image: '/assets/images/luxury_rose_bouquet_1785002544191.png' },
-    { name: 'Emerald Velvet Chest', price: 90, image: '/assets/images/luxury_gift_hamper_1785003431109.png' },
-    { name: 'Italian Crystal Vase', price: 120, image: '/assets/images/royal_wedding_bouquet_1785002559950.png' },
-    { name: 'Gold Foil Hand Wrapper', price: 40, image: '/assets/images/eternal_rose_cloche_1785003145770.png' },
+    { name: 'Black Velvet Box', price: 60, image: assetPath('/assets/images/luxury_rose_bouquet_1785002544191.png') },
+    { name: 'Emerald Velvet Chest', price: 90, image: assetPath('/assets/images/luxury_gift_hamper_1785003431109.png') },
+    { name: 'Italian Crystal Vase', price: 120, image: assetPath('/assets/images/royal_wedding_bouquet_1785002559950.png') },
+    { name: 'Gold Foil Hand Wrapper', price: 40, image: assetPath('/assets/images/eternal_rose_cloche_1785003145770.png') },
   ];
 
   // Calculate Base Price

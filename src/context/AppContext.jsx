@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { PRODUCTS } from '../data/products';
+import { assetPath } from '../utils/assetPath';
 
 const AppContext = createContext();
 
@@ -30,7 +31,7 @@ export const AppProvider = ({ children }) => {
       id: 'bouq-1',
       name: 'The Imperial Grand Velvet Roses',
       priceUSD: 450,
-      image: '/assets/images/luxury_rose_bouquet_1785002544191.png',
+      image: assetPath('/assets/images/luxury_rose_bouquet_1785002544191.png'),
       category: 'Featured',
       quantity: 1,
       variant: '100 Ecuadorian Stems in Black Velvet Box'

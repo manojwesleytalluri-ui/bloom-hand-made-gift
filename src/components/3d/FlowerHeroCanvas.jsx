@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, ShoppingBag, Sparkles as SparklesIcon, Volume2, VolumeX } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { assetPath } from '../../utils/assetPath';
 
 // Carousel Items data matching public/assets/images
 const CAROUSEL_ITEMS = [
@@ -13,7 +14,7 @@ const CAROUSEL_ITEMS = [
     name: 'Royal Eclipse Ecuadorian Gold Roses',
     tagline: 'Signature Bestseller Ecuadorian Blooms in Velvet wrap with Gold Accents',
     priceUSD: 450,
-    image: '/assets/images/luxury_rose_bouquet_1785002544191.png',
+    image: assetPath('/assets/images/luxury_rose_bouquet_1785002544191.png'),
     preset: 'gold',
   },
   {
@@ -21,7 +22,7 @@ const CAROUSEL_ITEMS = [
     name: 'The Sovereign Imperial Red Velvet Roses',
     tagline: '100 Ecuadorian Grand Roses in Signature Black Velvet Box & 24K Gold Trim',
     priceUSD: 450,
-    image: '/assets/images/sovereign_red_roses_1785005575575.png',
+    image: assetPath('/assets/images/sovereign_red_roses_1785005575575.png'),
     preset: 'crimson',
   },
   {
@@ -29,7 +30,7 @@ const CAROUSEL_ITEMS = [
     name: 'The Dior Grand Gala Champagne & Flowers Hamper',
     tagline: 'Vintage Dom Pérignon Champagne, Belgian Gold Truffles & Black Orchids',
     priceUSD: 1200,
-    image: '/assets/images/luxury_gift_hamper_1785003431109.png',
+    image: assetPath('/assets/images/luxury_gift_hamper_1785003431109.png'),
     preset: 'emerald',
   },
   {
@@ -37,7 +38,7 @@ const CAROUSEL_ITEMS = [
     name: 'L’Éternel Preserved Crimson Rose Cloche',
     tagline: 'Real Ecuadorian Rose Preserved for 5+ Years under Crystal Glass Cloche',
     priceUSD: 320,
-    image: '/assets/images/eternal_rose_cloche_1785003145770.png',
+    image: assetPath('/assets/images/eternal_rose_cloche_1785003145770.png'),
     preset: 'crimson',
   },
   {
@@ -45,7 +46,7 @@ const CAROUSEL_ITEMS = [
     name: 'Royal Palais Bridal Orchid & Peony Cascade',
     tagline: 'Rare White Orchids, Plush French Peonies & Gold Leafed Eucalyptus Stems',
     priceUSD: 680,
-    image: '/assets/images/royal_bridal_orchids_1785005589455.png',
+    image: assetPath('/assets/images/royal_bridal_orchids_1785005589455.png'),
     preset: 'emerald',
   },
   {
@@ -53,7 +54,7 @@ const CAROUSEL_ITEMS = [
     name: 'Monaco Sunburst Golden Tulips & Cashmere Silk',
     tagline: '50 Rare Golden Dutch Tulips with Hand-Tied Italian Gold Silk Ribbon',
     priceUSD: 390,
-    image: '/assets/images/monaco_golden_tulips.png',
+    image: assetPath('/assets/images/monaco_golden_tulips.png'),
     preset: 'gold',
   },
   {
@@ -61,7 +62,7 @@ const CAROUSEL_ITEMS = [
     name: 'Versailles Diamond White Hydrangea & Calla Lily',
     tagline: 'Architectural Floral Sculpture for Presidential Suites & Luxury Estates',
     priceUSD: 850,
-    image: '/assets/images/versailles_white_hydrangeas.png',
+    image: assetPath('/assets/images/versailles_white_hydrangeas.png'),
     preset: 'gold',
   },
   {
@@ -69,7 +70,7 @@ const CAROUSEL_ITEMS = [
     name: 'Royal Romance Bridal Rose Bouquet',
     tagline: 'Premium Ivory Roses with Hand-Tied Satin Ribbon Cascade & Gold Accents',
     priceUSD: 580,
-    image: '/assets/images/royal_wedding_bouquet_1785002559950.png',
+    image: assetPath('/assets/images/royal_wedding_bouquet_1785002559950.png'),
     preset: 'gold',
   }
 ];

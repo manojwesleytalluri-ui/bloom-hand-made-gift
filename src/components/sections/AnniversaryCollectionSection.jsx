@@ -2,6 +2,7 @@ import React from 'react';
 import { useApp } from '../../context/AppContext';
 import { Heart, Sparkles, Shield, Clock } from 'lucide-react';
 import { PRODUCTS } from '../../data/products';
+import { assetPath } from '../../utils/assetPath';
 
 export default function AnniversaryCollectionSection() {
   const { products, formatPrice, addToCart } = useApp();
@@ -18,7 +19,7 @@ export default function AnniversaryCollectionSection() {
           <div className="lg:col-span-6 relative">
             <div className="glass-panel p-4 rounded-3xl border border-gold-500/40 relative shadow-gold-lg overflow-hidden group">
               <img
-                src="/assets/images/eternal_rose_cloche_1785003145770.png"
+                src={assetPath('/assets/images/eternal_rose_cloche_1785003145770.png')}
                 alt="Eternal Rose Cloche"
                 className="w-full h-[320px] sm:h-[450px] object-cover rounded-2xl group-hover:scale-105 transition-transform duration-700"
               />

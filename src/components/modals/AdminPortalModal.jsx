@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { PRODUCTS } from '../../data/products';
+import { assetPath } from '../../utils/assetPath';
 import {
   X,
   LayoutDashboard,
@@ -203,7 +204,7 @@ export default function AdminPortalModal() {
       reviewsCount: 1,
       category: newCategory,
       occasion: newCategory === 'Wedding' ? 'Wedding' : 'Anniversary',
-      image: newImage || '/assets/images/sovereign_red_roses_1785005575575.png',
+      image: newImage || assetPath('/assets/images/sovereign_red_roses_1785005575575.png'),
       badge: 'New Arrival',
       isNew: true,
       is3D: false,

@@ -2,6 +2,7 @@ import React from 'react';
 import { useApp } from '../../context/AppContext';
 import { Gift, Sparkles, Award, ShoppingBag } from 'lucide-react';
 import { PRODUCTS } from '../../data/products';
+import { assetPath } from '../../utils/assetPath';
 
 export default function GiftHampersSection() {
   const { products, formatPrice, addToCart } = useApp();
@@ -31,7 +32,7 @@ export default function GiftHampersSection() {
           <div className="lg:col-span-6 relative">
             <div className="glass-panel p-4 rounded-3xl border border-gold-500/40 shadow-gold-lg">
               <img
-                src="/assets/images/luxury_gift_hamper_1785003431109.png"
+                src={assetPath('/assets/images/luxury_gift_hamper_1785003431109.png')}
                 alt="Luxury Gift Hamper"
                 className="w-full h-[420px] object-cover rounded-2xl"
               />

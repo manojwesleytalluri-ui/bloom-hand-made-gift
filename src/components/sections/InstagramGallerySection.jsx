@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Heart, MessageCircle, ExternalLink, Camera, Sparkles } from 'lucide-react';
+import { assetPath } from '../../utils/assetPath';
 
 export default function InstagramGallerySection() {
   const [hoveredPost, setHoveredPost] = useState(null);
@@ -23,7 +24,7 @@ export default function InstagramGallerySection() {
     },
     {
       id: 'ig-3',
-      image: '/assets/images/eternal_rose_cloche_1785003145770.png',
+      image: assetPath('/assets/images/eternal_rose_cloche_1785003145770.png'),
       likes: '3.9k',
       comments: '219',
       caption: 'L\'Éternel 5-Year Preserved Rose under hand-blown crystal. Paris Atelier.',
