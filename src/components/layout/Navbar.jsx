@@ -364,6 +364,16 @@ export default function Navbar() {
             ✨ Book VIP Consultation Now
           </button>
 
+          <button
+            onClick={() => {
+              setIsAdminOpen(true);
+              setMobileMenuOpen(false);
+            }}
+            className="w-full py-3 rounded-full bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 font-serif font-bold text-xs uppercase tracking-wider text-center flex items-center justify-center gap-1.5 hover:bg-emerald-900/80 transition-colors"
+          >
+            <span>👑 VIP Admin Portal</span>
+          </button>
+
           <div className="flex flex-col space-y-3 pt-2">
             {navLinks.map((link) => (
               <a
