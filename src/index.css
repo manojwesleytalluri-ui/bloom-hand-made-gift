@@ -1,34 +1,52 @@
 @import "tailwindcss";
 
+/* ═══════════════════════════════════════════════════════════════
+   LUXURY GOLD DESIGN SYSTEM — Unified Color Variables
+   ═══════════════════════════════════════════════════════════════ */
 :root {
-  --logo-gold-1: #ebd7b9;
-  --logo-gold-2: #b8965c;
-  --logo-gold-3: #806132;
-  
-  --logo-burgundy-1: #b83b5e;
-  --logo-burgundy-2: #6b092b;
+  /* Gold Palette */
+  --gold-primary: #D4AF37;
+  --gold-secondary: #C9A227;
+  --gold-light: #F6E7A1;
+  --gold-dark: #8B6A16;
+  --gold-hover: #E8C75A;
+
+  /* Text Colors */
+  --text-primary: #F5F2EB;
+  --text-secondary: #D8D3CC;
+
+  /* Borders & Shadows */
+  --border-gold: rgba(212,175,55,.25);
+  --shadow-gold: rgba(212,175,55,.18);
+
+  /* Logo Gold Gradient */
+  --logo-gold-1: #F6E7A1;
+  --logo-gold-2: #D4AF37;
+  --logo-gold-3: #8B6A16;
 }
 
 .light {
-  --logo-gold-1: #8c1d40;
-  --logo-gold-2: #540420;
-  --logo-gold-3: #2d0110;
-  
-  --logo-burgundy-1: #540420;
-  --logo-burgundy-2: #1c020b;
+  --logo-gold-1: #8B6A16;
+  --logo-gold-2: #C9A227;
+  --logo-gold-3: #6E5311;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   BASE STYLES
+   ═══════════════════════════════════════════════════════════════ */
 @layer base {
   body {
     background-color: #121215;
-    color: #f8f5ee;
+    color: var(--text-primary);
     font-family: 'Inter', system-ui, sans-serif;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
   }
 }
 
-/* Custom Scrollbar — subtle and refined */
+/* ═══════════════════════════════════════════════════════════════
+   SCROLLBAR — Subtle Gold
+   ═══════════════════════════════════════════════════════════════ */
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -36,19 +54,21 @@
   background: #121215;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(107, 9, 43, 0.25);
+  background: rgba(212,175,55,0.25);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(107, 9, 43, 0.45);
+  background: rgba(212,175,55,0.45);
 }
 
-/* Glassmorphism — softer, less aggressive */
+/* ═══════════════════════════════════════════════════════════════
+   GLASSMORPHISM — Gold-accented
+   ═══════════════════════════════════════════════════════════════ */
 .glass-panel {
   background: rgba(26, 26, 31, 0.7);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(107, 9, 43, 0.15);
+  border: 1px solid rgba(212,175,55,0.15);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
@@ -57,31 +77,37 @@
 }
 .glass-card-hover:hover {
   transform: translateY(-6px);
-  border-color: rgba(107, 9, 43, 0.3);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+  border-color: rgba(212,175,55,0.35);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45), 0 0 20px rgba(212,175,55,0.1);
 }
 
-/* Typography — refined, less flashy gold */
+/* ═══════════════════════════════════════════════════════════════
+   GOLD GRADIENTS — Premium Luxury
+   ═══════════════════════════════════════════════════════════════ */
 .text-gold-gradient {
-  background: linear-gradient(135deg, #FFF176 0%, #FFD54F 50%, #FF8F00 100%);
+  background: linear-gradient(135deg, #F6E7A1 0%, #D4AF37 50%, #8B6A16 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 2px 8px rgba(255, 213, 79, 0.3));
+  filter: drop-shadow(0 2px 8px rgba(212,175,55,0.3));
 }
 
 .bg-gold-gradient {
-  background: linear-gradient(135deg, #FFD54F 0%, #FFB300 50%, #FF8F00 100%);
+  background: linear-gradient(135deg, #D4AF37 0%, #C9A227 50%, #8B6A16 100%);
 }
 
-/* Shadows — subtle */
+/* ═══════════════════════════════════════════════════════════════
+   SHADOWS — Gold-infused
+   ═══════════════════════════════════════════════════════════════ */
 .shadow-gold-sm {
-  box-shadow: 0 2px 12px rgba(107, 9, 43, 0.1);
+  box-shadow: 0 2px 12px rgba(212,175,55,0.15);
 }
 .shadow-gold-lg {
-  box-shadow: 0 8px 32px rgba(107, 9, 43, 0.15);
+  box-shadow: 0 8px 32px rgba(212,175,55,0.2);
 }
 
-/* Book Now button glow — subtle pulse */
+/* ═══════════════════════════════════════════════════════════════
+   BUTTON GLOW — Gold Pulse
+   ═══════════════════════════════════════════════════════════════ */
 .glow-gold-btn {
   position: relative;
   transition: all 0.3s ease;
@@ -90,7 +116,7 @@
   content: '';
   position: absolute;
   inset: -1px;
-  background: linear-gradient(45deg, #6b092b, #b83b5e, #768a66, #6b092b);
+  background: linear-gradient(45deg, #C9A227, #D4AF37, #E8C75A, #C9A227);
   border-radius: 9999px;
   z-index: -1;
   filter: blur(6px);
@@ -101,7 +127,9 @@
   opacity: 0.6;
 }
 
-/* Animations — smooth and subtle */
+/* ═══════════════════════════════════════════════════════════════
+   ANIMATIONS
+   ═══════════════════════════════════════════════════════════════ */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
@@ -122,6 +150,11 @@
   to { transform: rotate(360deg); }
 }
 
+@keyframes header-fade {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .animate-fadeIn {
   animation: fadeIn 0.5s ease-out forwards;
 }
@@ -138,41 +171,47 @@
   animation: spin 12s linear infinite;
 }
 
+.animate-header-fade {
+  animation: header-fade 0.6s ease-out forwards;
+}
+
 /* Smooth scroll */
 html {
   scroll-behavior: smooth;
 }
 
-/* Light mode overrides */
+/* ═══════════════════════════════════════════════════════════════
+   LIGHT MODE OVERRIDES
+   ═══════════════════════════════════════════════════════════════ */
 .light body {
-  background-color: #faf9f6 !important; /* Premium soft milk white background */
+  background-color: #faf9f6 !important;
   color: #1e1e24 !important;
 }
 
 .light .glass-panel {
   background: rgba(255, 255, 255, 0.75) !important;
-  border: 1px solid rgba(107, 9, 43, 0.12) !important;
-  box-shadow: 0 10px 30px rgba(107, 9, 43, 0.04) !important;
+  border: 1px solid rgba(212,175,55,0.15) !important;
+  box-shadow: 0 10px 30px rgba(212,175,55,0.06) !important;
 }
 
-/* Light mode typography colors */
+/* Light mode typography */
 .light h1,
 .light h2,
 .light h3,
 .light h4,
 .light h5,
 .light h6 {
-  color: #540420 !important; /* Rich deep burgundy headers */
+  color: #8B6A16 !important;
 }
 
-/* Make burgundy gradient letters pop beautifully on light background */
+/* Gold gradient in light mode — deeper richer gold */
 .light .text-gold-gradient {
-  background: linear-gradient(135deg, #8c1d40 0%, #540420 50%, #2d0110 100%) !important;
+  background: linear-gradient(135deg, #8B6A16 0%, #C9A227 50%, #6E5311 100%) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
 }
 
-/* Adjust layout containers for light theme cards */
+/* Light mode card containers */
 .light .bg-charcoal-900\/50,
 .light .bg-obsidian-900\/50,
 .light .bg-charcoal-950\/80,
@@ -181,14 +220,14 @@ html {
 .light .bg-obsidian-900 {
   background-color: rgba(255, 255, 255, 0.8) !important;
   backdrop-filter: blur(16px) !important;
-  border-color: rgba(107, 9, 43, 0.08) !important;
-  box-shadow: 0 12px 30px rgba(107, 9, 43, 0.04) !important;
+  border-color: rgba(212,175,55,0.12) !important;
+  box-shadow: 0 12px 30px rgba(212,175,55,0.06) !important;
 }
 
-/* Darker text overrides for light mode readability */
+/* Light mode text adjustments */
 .light .text-ivory-200,
 .light .text-pearl-200 {
-  color: #3e3e4a !important; /* Rich slate gray */
+  color: #3e3e4a !important;
 }
 
 .light .text-ivory-300,
@@ -206,39 +245,38 @@ html {
 }
 
 .light .text-charcoal-900 {
-  color: #540420 !important; /* Deep burgundy headers */
+  color: #8B6A16 !important;
 }
 
 .light .text-charcoal-800\/60 {
-  color: rgba(107, 9, 43, 0.75) !important; /* Saturated muted burgundy text */
+  color: rgba(139,106,22,0.75) !important;
 }
 
-/* Make buttons prominent and easy to read in light theme */
+/* Light mode buttons — deep gold gradient */
 .light .bg-mutedGold-gradient,
 .light .bg-gold-gradient {
-  background: linear-gradient(135deg, #8c1d40 0%, #540420 50%, #2d0110 100%) !important;
-  color: #ffffff !important; /* Crisp white letters on deep burgundy */
+  background: linear-gradient(135deg, #C9A227 0%, #8B6A16 50%, #6E5311 100%) !important;
+  color: #ffffff !important;
 }
 
-.light .bg-mutedGold-gradient * ,
+.light .bg-mutedGold-gradient *,
 .light .bg-gold-gradient * {
   color: #ffffff !important;
 }
 
-/* Adjust highlight icons and badges in light theme */
+/* Light mode gold accents */
 .light .text-gold-400,
 .light .text-mutedGold-400 {
-  color: #6b092b !important;
+  color: #8B6A16 !important;
 }
 
 .light .border-gold-500\/10,
 .light .border-mutedGold-500\/10,
 .light .border-gold-500\/30,
 .light .border-mutedGold-500\/30 {
-  border-color: rgba(107, 9, 43, 0.15) !important;
+  border-color: rgba(212,175,55,0.2) !important;
 }
 
 .light .bg-charcoal-950 {
   background-color: #faf9f6 !important;
 }
-
