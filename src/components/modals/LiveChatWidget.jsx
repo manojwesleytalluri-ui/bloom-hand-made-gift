@@ -61,25 +61,25 @@ export default function LiveChatWidget() {
         href="https://wa.me/180088825666?text=Hello%20Bloom%20Hand%20Made%20Gift%20VIP%20Concierge,%20I%20would%20like%20to%20inquire%20about%20a%20bespoke%20floral%20arrangement."
         target="_blank"
         rel="noreferrer"
-        className="fixed bottom-24 right-6 z-40 p-3.5 rounded-full bg-emerald-700 text-pearl-50 border border-emerald-400/50 shadow-lg hover:scale-110 transition-transform flex items-center gap-2 group"
+        className="fixed bottom-20 right-4 sm:bottom-24 sm:right-6 z-40 p-2.5 sm:p-3.5 rounded-full bg-emerald-700 text-pearl-50 border border-emerald-400/50 shadow-lg hover:scale-110 transition-transform flex items-center gap-1.5 sm:gap-2 group"
         title="WhatsApp VIP Concierge"
       >
-        <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
-        <span className="text-xs font-serif font-bold tracking-wider hidden group-hover:inline">WhatsApp VIP</span>
+        <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+        <span className="text-[10px] sm:text-xs font-serif font-bold tracking-wider hidden group-hover:inline">WhatsApp VIP</span>
       </a>
 
       {/* Live Concierge Floating Button */}
       <button
         onClick={() => setIsChatOpen(!isChatOpen)}
-        className="fixed bottom-6 right-6 z-40 px-4 py-3.5 rounded-full bg-gold-gradient text-obsidian-950 font-serif font-bold text-xs uppercase tracking-widest shadow-gold-glow hover:scale-105 transition-transform flex items-center gap-2"
+        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 px-3 py-2.5 sm:px-4 sm:py-3.5 rounded-full bg-gold-gradient text-obsidian-950 font-serif font-bold text-[10px] sm:text-xs uppercase tracking-widest shadow-gold-glow hover:scale-105 transition-transform flex items-center gap-1.5 sm:gap-2"
       >
-        <Sparkles className="w-4 h-4 text-obsidian-950 animate-spin-slow" />
+        <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-obsidian-950 animate-spin-slow" />
         <span>VIP Concierge</span>
       </button>
 
       {/* Chat Window Drawer */}
       {isChatOpen && (
-        <div className="fixed bottom-24 right-6 z-50 w-80 sm:w-96 glass-panel border border-gold-500/40 rounded-3xl p-5 space-y-4 shadow-gold-lg animate-fadeIn">
+        <div className="fixed bottom-16 right-4 sm:bottom-24 sm:right-6 z-50 w-[calc(100vw-2rem)] sm:w-96 glass-panel border border-gold-500/40 rounded-3xl p-5 space-y-4 shadow-gold-lg animate-fadeIn">
           
           {/* Header */}
           <div className="flex items-center justify-between border-b border-gold-500/20 pb-3">
