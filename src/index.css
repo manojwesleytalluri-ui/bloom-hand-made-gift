@@ -63,13 +63,14 @@
 
 /* Typography — refined, less flashy gold */
 .text-gold-gradient {
-  background: linear-gradient(135deg, #b83b5e 0%, #6b092b 50%, #3d0216 100%);
+  background: linear-gradient(135deg, #FFF176 0%, #FFD54F 50%, #FF8F00 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 8px rgba(255, 213, 79, 0.3));
 }
 
 .bg-gold-gradient {
-  background: linear-gradient(135deg, #b83b5e 0%, #6b092b 50%, #3d0216 100%);
+  background: linear-gradient(135deg, #FFD54F 0%, #FFB300 50%, #FF8F00 100%);
 }
 
 /* Shadows — subtle */
