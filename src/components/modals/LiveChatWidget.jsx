@@ -3,13 +3,15 @@ import { useApp } from '../../context/AppContext';
 import { MessageSquare, X, Send, PhoneCall, Sparkles, CheckCircle2, Compass } from 'lucide-react';
 
 export default function LiveChatWidget() {
-  const { isChatOpen, setIsChatOpen, setIsTrackingOpen, setIsBookingOpen } = useApp();
+  const { isChatOpen, setIsChatOpen, setIsTrackingOpen, setIsBookingOpen, isCheckoutOpen, isAdminOpen } = useApp();
   const [inputMessage, setInputMessage] = useState('');
   const [chatHistory, setChatHistory] = useState([
     { sender: 'concierge', text: 'Good evening. Welcome to Bloom Hand Made Gift. How may our VIP Concierge assist your floral needs today?' }
   ]);
 
   const [isTyping, setIsTyping] = useState(false);
+
+  if (isCheckoutOpen || isAdminOpen || isBookingOpen) return null;
 
   const chatbotReplies = (query) => {
     const q = query.toLowerCase();
