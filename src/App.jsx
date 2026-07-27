@@ -1,6 +1,7 @@
 import React from 'react';
 import { AppProvider } from './context/AppContext';
 import Navbar from './components/layout/Navbar';
+import MagicalCursor from './components/layout/MagicalCursor';
 import HeroSection from './components/sections/HeroSection';
 import FeaturedBouquetsSection from './components/sections/FeaturedBouquetsSection';
 import WeddingCollectionSection from './components/sections/WeddingCollectionSection';
@@ -29,7 +30,7 @@ import LiveChatWidget from './components/modals/LiveChatWidget';
 export default function App() {
   return (
     <AppProvider>
-      <div className="min-h-screen bg-charcoal-950 text-ivory-100 font-sans selection:bg-mutedGold-500 selection:text-charcoal-950">
+      <div className="min-h-screen overflow-x-hidden w-full bg-charcoal-950 text-ivory-100 font-sans selection:bg-mutedGold-500 selection:text-charcoal-950">
         {/* Navigation Bar */}
         <Navbar />
 
@@ -87,7 +88,11 @@ export default function App() {
 
         {/* WhatsApp & VIP Concierge Floating Live Chat */}
         <LiveChatWidget />
+
+        {/* Custom Angel Image Cursor */}
+        <MagicalCursor />
       </div>
     </AppProvider>
   );
 }
+

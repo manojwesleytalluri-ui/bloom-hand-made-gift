@@ -129,7 +129,7 @@ export default function HeroSection() {
             </button>
 
             {/* 3D Canvas */}
-            <FlowerHeroCanvas preset={lightingPreset} />
+            <FlowerHeroCanvas preset={lightingPreset} setPreset={setLightingPreset} />
           </div>
 
         </div>
