@@ -250,35 +250,6 @@ export default function FlowerHeroCanvas({ preset = 'gold', setPreset }) {
 
   return (
     <div className="w-full h-[340px] sm:h-[500px] lg:h-[680px] relative rounded-3xl overflow-hidden bg-charcoal-950/40 backdrop-blur-md border border-mutedGold-500/20 shadow-2xl group flex flex-col justify-between p-6 sm:p-8 select-none">
-      
-      {/* Lighting Preset Selector Controls */}
-      <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-20 flex items-center gap-1.5 sm:gap-2 bg-obsidian-950/90 backdrop-blur-md p-1 sm:p-1.5 rounded-full border border-gold-500/30">
-        <span className="text-[9px] sm:text-[10px] uppercase font-bold text-gold-400 px-1.5 sm:px-2">3D Aura:</span>
-        <button
-          onClick={() => setPreset('gold')}
-          className={`px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-[9px] sm:text-[10px] uppercase font-medium transition-all ${
-            preset === 'gold' ? 'bg-gold-500 text-obsidian-950 font-bold' : 'text-pearl-300 hover:text-gold-300'
-          }`}
-        >
-          Gold
-        </button>
-        <button
-          onClick={() => setPreset('emerald')}
-          className={`px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-[9px] sm:text-[10px] uppercase font-medium transition-all ${
-            preset === 'emerald' ? 'bg-emerald-700 text-pearl-50 font-bold' : 'text-pearl-300 hover:text-gold-300'
-          }`}
-        >
-          Emerald
-        </button>
-        <button
-          onClick={() => setPreset('crimson')}
-          className={`px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-[9px] sm:text-[10px] uppercase font-medium transition-all ${
-            preset === 'crimson' ? 'bg-red-900 text-pearl-50 font-bold' : 'text-pearl-300 hover:text-gold-300'
-          }`}
-        >
-          Crimson
-        </button>
-      </div>
 
       {/* Audio Ambience Toggle */}
       <button

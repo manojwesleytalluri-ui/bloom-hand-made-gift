@@ -114,15 +114,6 @@ export default function FeaturedBouquetsSection() {
                       </span>
                     </div>
 
-                    {/* 3D Indicator */}
-                    {product.is3D && (
-                      <div className="absolute top-5 right-5 z-10">
-                        <span className="px-3 py-1.5 rounded-full bg-mutedGold-500/20 backdrop-blur-xl border border-mutedGold-400/50 text-mutedGold-300 text-[9px] uppercase tracking-[0.2em] font-serif shadow-lg">
-                          ✨ 3D View
-                        </span>
-                      </div>
-                    )}
-
                     {/* Bottom Image Actions */}
                     <div className="absolute bottom-5 left-5 right-5 z-10 flex items-center justify-between">
                       {/* Quick View */}
