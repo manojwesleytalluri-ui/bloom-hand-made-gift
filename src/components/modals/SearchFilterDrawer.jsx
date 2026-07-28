@@ -1,5 +1,6 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
+import { assetPath } from '../../utils/assetPath';
 import { PRODUCTS } from '../../data/products';
 import { X, Search, Filter, ShoppingBag } from 'lucide-react';
 
@@ -13,7 +14,8 @@ export default function SearchFilterDrawer() {
     setSelectedCategory,
     formatPrice,
     addToCart,
-    products
+    products,
+    setQuickViewProduct
   } = useApp();
 
   if (!isSearchOpen) return null;
@@ -69,10 +71,28 @@ export default function SearchFilterDrawer() {
             <p className="text-center py-12 text-pearl-300 text-sm">No luxury arrangements matched your search query.</p>
           ) : (
             filtered.map((p) => (
-              <div key={p.id} className="p-4 rounded-2xl bg-obsidian-900/90 border border-gold-500/20 flex items-center justify-between gap-4">
-                <img src={p.image} alt={p.name} className="w-16 h-16 object-cover rounded-xl border border-gold-500/20" />
-                <div className="flex-1">
-                  <h4 className="font-serif font-bold text-sm text-pearl-50">{p.name}</h4>
+              <div key={p.id} className="p-4 rounded-2xl bg-obsidian-900/90 border border-gold-500/20 flex items-center justify-between gap-4 hover:border-gold-500/40 transition-colors">
+                <img
+                  src={p.image || assetPath('/assets/images/sovereign_red_roses_1785005575575.png')}
+                  alt={p.name}
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = assetPath('/assets/images/sovereign_red_roses_1785005575575.png');
+                  }}
+                  className="w-16 h-16 object-cover rounded-xl border border-gold-500/20 cursor-pointer shrink-0"
+                  onClick={() => {
+                    setIsSearchOpen(false);
+                    setQuickViewProduct(p);
+                  }}
+                />
+                <div
+                  className="flex-1 cursor-pointer"
+                  onClick={() => {
+                    setIsSearchOpen(false);
+                    setQuickViewProduct(p);
+                  }}
+                >
+                  <h4 className="font-serif font-bold text-sm text-pearl-50 hover:text-[#d19e45] transition-colors">{p.name}</h4>
                   <p className="text-xs text-pearl-300/70 line-clamp-1">{p.tagline}</p>
                   <span className="font-serif font-bold text-xs text-gold-gradient">{formatPrice(p.priceUSD)}</span>
                 </div>
@@ -81,9 +101,10 @@ export default function SearchFilterDrawer() {
                     addToCart(p);
                     setIsSearchOpen(false);
                   }}
-                  className="px-4 py-2 rounded-full bg-gold-gradient text-obsidian-950 font-serif font-bold text-xs uppercase"
+                  className="px-4 py-2 rounded-full bg-gold-gradient text-obsidian-950 font-serif font-bold text-xs flex items-center gap-1.5 shrink-0"
                 >
-                  Acquire
+                  <ShoppingBag className="w-4 h-4" />
+                  <span>Add</span>
                 </button>
               </div>
             ))

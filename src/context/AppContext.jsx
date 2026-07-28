@@ -468,10 +468,19 @@ export const AppProvider = ({ children }) => {
       setCurrentUser(sessionUser);
       localStorage.setItem('bloom_auth_session', JSON.stringify(sessionUser));
 
-      // Load user isolated data
+      // Load user isolated data & merge guest wishlist seamlessly
       try {
-        const userWishlist = localStorage.getItem(`bloom_wishlist_${sessionUser.email}`);
-        setWishlist(userWishlist ? JSON.parse(userWishlist) : []);
+        const guestWishlistRaw = localStorage.getItem('bloom_guest_wishlist');
+        const guestWishlist = guestWishlistRaw ? JSON.parse(guestWishlistRaw) : [];
+
+        const userWishlistRaw = localStorage.getItem(`bloom_wishlist_${sessionUser.email}`);
+        const userWishlist = userWishlistRaw ? JSON.parse(userWishlistRaw) : [];
+
+        // Merge without duplicates
+        const mergedWishlist = Array.from(new Set([...userWishlist, ...guestWishlist]));
+        setWishlist(mergedWishlist);
+        localStorage.setItem(`bloom_wishlist_${sessionUser.email}`, JSON.stringify(mergedWishlist));
+        localStorage.removeItem('bloom_guest_wishlist');
 
         const userCart = localStorage.getItem(`bloom_cart_${sessionUser.email}`);
         setCart(userCart ? JSON.parse(userCart) : []);
@@ -579,11 +588,22 @@ export const AppProvider = ({ children }) => {
 
   const cartTotalUSD = cart.reduce((acc, item) => acc + item.priceUSD * item.quantity, 0);
 
-  // Wishlist Handlers
-  const toggleWishlist = (productId) => {
-    setWishlist((prev) =>
-      prev.includes(productId) ? prev.filter((id) => id !== productId) : [...prev, productId]
-    );
+  // Wishlist Handlers with Deduplication & Guest Storage Support
+  const toggleWishlist = (productOrId) => {
+    const id = typeof productOrId === 'string' ? productOrId : productOrId?.id;
+    if (!id) return;
+
+    setWishlist((prev) => {
+      const exists = prev.includes(id);
+      const updated = exists ? prev.filter((item) => item !== id) : Array.from(new Set([...prev, id]));
+      
+      const storageKey = currentUser?.email ? `bloom_wishlist_${currentUser.email}` : 'bloom_guest_wishlist';
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(updated));
+      } catch (e) {}
+
+      return updated;
+    });
   };
 
   return (

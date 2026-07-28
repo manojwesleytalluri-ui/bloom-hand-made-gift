@@ -85,12 +85,16 @@ export default function FeaturedBouquetsSection() {
                       </div>
                     )}
 
-                    {/* Main Image */}
+                    {/* Main Image with Fallback Protection */}
                     <img
-                      src={product.image}
+                      src={product.image || assetPath('/assets/images/sovereign_red_roses_1785005575575.png')}
                       alt={product.name}
                       onLoad={() => handleImageLoad(product.id)}
-                      onError={() => handleImageLoad(product.id)}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = assetPath('/assets/images/sovereign_red_roses_1785005575575.png');
+                        handleImageLoad(product.id);
+                      }}
                       className={`w-full h-full object-cover transition-all duration-1000 ease-out group-hover:scale-110 ${
                         isLoaded || (product.image && product.image.startsWith('data:')) ? 'opacity-100' : 'opacity-0'
                       }`}

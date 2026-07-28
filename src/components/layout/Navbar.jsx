@@ -118,9 +118,11 @@ export default function Navbar() {
               title="Wishlist"
             >
               <Heart className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#d9d8d6]" />
-              <span className="absolute -top-1 -right-1 w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-[#d19e45] text-[#131417] text-[8px] sm:text-[9px] font-bold flex items-center justify-center shadow-gold-sm">
-                {wishlist.length || 2}
-              </span>
+              {wishlist.length > 0 && (
+                <span className="absolute -top-1 -right-1 w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-[#d19e45] text-[#131417] text-[8px] sm:text-[9px] font-bold flex items-center justify-center shadow-gold-sm">
+                  {wishlist.length}
+                </span>
+              )}
             </button>
 
             {/* 3. Cart Button */}
@@ -131,9 +133,11 @@ export default function Navbar() {
               title="Shopping Cart"
             >
               <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#d9d8d6]" />
-              <span className="absolute -top-1 -right-1 w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-[#d19e45] text-[#131417] text-[8px] sm:text-[9px] font-bold flex items-center justify-center shadow-gold-sm">
-                {totalCartCount || 1}
-              </span>
+              {totalCartCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-[#d19e45] text-[#131417] text-[8px] sm:text-[9px] font-bold flex items-center justify-center shadow-gold-sm">
+                  {totalCartCount}
+                </span>
+              )}
             </button>
 
             {/* 4. User Profile / Account Trigger Icon (👤) - Matches laptop behavior */}
