@@ -72,32 +72,32 @@ export default function Navbar() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-40 transition-all duration-500 pointer-events-none">
-      <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 pt-2.5 sm:pt-4">
+      <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 pt-2 sm:pt-4">
         <div
-          className={`pointer-events-auto rounded-full transition-all duration-500 px-3 sm:px-6 py-2 sm:py-2.5 flex items-center justify-between border shadow-2xl ${
+          className={`pointer-events-auto rounded-full transition-all duration-500 px-2.5 sm:px-6 py-1.5 sm:py-2.5 flex items-center justify-between border shadow-2xl ${
             scrolled
               ? 'border-[#5e4d2d] bg-[#131417] backdrop-blur-2xl'
               : 'border-[#5e4d2d]/90 bg-[#131417]/95 backdrop-blur-xl'
           }`}
           style={{ backgroundColor: '#131417', borderColor: '#5e4d2d' }}
         >
-          {/* Brand Crest & Title - Mobile Responsive Layout */}
-          <a href="#" className="flex items-center gap-2 sm:gap-3 group shrink-0 max-w-[62%] sm:max-w-none">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border border-dashed border-[#b88d3e] flex items-center justify-center relative bg-[#1a1b20] shadow-gold-sm transition-transform duration-300 group-hover:scale-105 shrink-0">
-              <span className="text-[6px] sm:text-[7px] text-[#d19e45] absolute top-0.5 sm:top-1 font-serif">✦</span>
-              <span className="font-serif font-bold text-[10px] sm:text-xs sm:text-sm text-[#d19e45] tracking-tighter mt-0.5 sm:mt-1">BH</span>
+          {/* Brand Crest & Title - Compact Sizing to prevent collision on phone ratio */}
+          <a href="#" className="flex items-center gap-1.5 sm:gap-3 group shrink min-w-0 pr-1">
+            <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-full border border-dashed border-[#b88d3e] flex items-center justify-center relative bg-[#1a1b20] shadow-gold-sm transition-transform duration-300 group-hover:scale-105 shrink-0">
+              <span className="text-[5px] sm:text-[7px] text-[#d19e45] absolute top-0.5 sm:top-1 font-serif">✦</span>
+              <span className="font-serif font-bold text-[9px] sm:text-xs sm:text-sm text-[#d19e45] tracking-tighter mt-0.5 sm:mt-1">BH</span>
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="font-serif text-[13px] sm:text-base font-bold tracking-wide text-[#d19e45] group-hover:text-[#e5b35a] transition-colors leading-tight truncate">
+              <span className="font-serif text-[10px] min-[360px]:text-[11px] sm:text-base font-bold tracking-wide text-[#d19e45] group-hover:text-[#e5b35a] transition-colors leading-tight truncate">
                 Bloom Hand Made Gift
               </span>
-              <span className="text-[7px] sm:text-[9px] uppercase tracking-[0.16em] sm:tracking-[0.25em] text-[#d9d8d6] font-semibold opacity-90 leading-tight truncate">
+              <span className="text-[6px] min-[360px]:text-[7px] sm:text-[9px] uppercase tracking-[0.1em] sm:tracking-[0.25em] text-[#d9d8d6] font-semibold opacity-90 leading-tight truncate">
                 HAUTE COUTURE FLORIST
               </span>
             </div>
           </a>
 
-          {/* Right Control Icons Row - Fits mobile screens seamlessly */}
+          {/* Right Control Icons Row - Exactly aligned on both Phone & Laptop */}
           <div className="flex items-center gap-1 sm:gap-2.5 shrink-0">
             
             {/* 1. Search Button */}
@@ -136,13 +136,14 @@ export default function Navbar() {
               </span>
             </button>
 
-            {/* 4. Menu Toggle Button / Authenticated Profile Trigger */}
+            {/* 4. User Profile / Account Trigger Icon (👤) - Matches laptop behavior */}
             {currentUser ? (
               <div className="relative">
                 <button
                   onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-                  className="p-1.5 sm:p-2.5 rounded-full border border-[#5e4d2d] text-[#d9d8d6] hover:text-[#d19e45] hover:border-[#d19e45] transition-all bg-[#1a1b20] flex items-center gap-1"
+                  className="p-1.5 sm:p-2.5 rounded-full border border-[#5e4d2d] text-[#d9d8d6] hover:text-[#d19e45] hover:border-[#d19e45] transition-all bg-[#1a1b20] flex items-center justify-center"
                   style={{ backgroundColor: '#1a1b20', borderColor: '#5e4d2d' }}
+                  title="My Account"
                 >
                   <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#d19e45]" />
                 </button>
@@ -239,9 +240,9 @@ export default function Navbar() {
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="p-1.5 sm:p-2.5 rounded-full border border-[#5e4d2d] text-[#d9d8d6] hover:text-[#d19e45] hover:border-[#d19e45] transition-all bg-[#1a1b20]"
                 style={{ backgroundColor: '#1a1b20', borderColor: '#5e4d2d' }}
-                title="Toggle Menu"
+                title="Account / Menu"
               >
-                {mobileMenuOpen ? <X className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#d9d8d6]" /> : <Menu className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#d9d8d6]" />}
+                {mobileMenuOpen ? <X className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#d9d8d6]" /> : <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#d9d8d6]" />}
               </button>
             )}
 
