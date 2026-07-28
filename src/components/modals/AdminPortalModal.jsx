@@ -22,7 +22,11 @@ import {
   RefreshCw,
   Search,
   Filter,
-  Lock
+  Lock,
+  UploadCloud,
+  Image as ImageIcon,
+  Check,
+  Star
 } from 'lucide-react';
 
 export default function AdminPortalModal() {
@@ -37,7 +41,7 @@ export default function AdminPortalModal() {
     allTime: { visitors: traffic.allTime.toLocaleString(), change: '+45.8%' },
   };
 
-  // Live Inventory State (starts empty as requested)
+  // Live Inventory State
   const [inventory, setInventory] = useState([]);
   
   // Inventory Form State
@@ -64,14 +68,21 @@ export default function AdminPortalModal() {
     setInvCost('');
   };
 
-
-
   // New Product Form State
   const [newTitle, setNewTitle] = useState('');
   const [newCategory, setNewCategory] = useState('Featured');
   const [newPrice, setNewPrice] = useState('550');
+  const [newDiscountPrice, setNewDiscountPrice] = useState('');
+  const [newStock, setNewStock] = useState('50');
+  const [newAvailability, setNewAvailability] = useState('In Stock');
+  const [newDeliveryTime, setNewDeliveryTime] = useState('Same-Day VIP Express');
+  const [newTags, setNewTags] = useState('Handmade, Ecuadorian Stems, Gold Box');
+  const [isFeatured, setIsFeatured] = useState(true);
   const [newTagline, setNewTagline] = useState('');
-  const [newImage, setNewImage] = useState('');
+  const [uploadedImages, setUploadedImages] = useState([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadError, setUploadError] = useState('');
   const [isProductAdded, setIsProductAdded] = useState(false);
 
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
@@ -95,6 +106,131 @@ export default function AdminPortalModal() {
     } else {
       setLoginError(true);
     }
+  };
+
+  const updateOrderStatus = (orderId, newStatus) => {
+    setOrders((prev) =>
+      prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o))
+    );
+  };
+
+  // Multiple Image Upload & Compression Handler
+  const handleMultipleImagesChange = (e) => {
+    const files = Array.from(e.target.files);
+    if (!files || files.length === 0) return;
+
+    setUploadError('');
+    setIsUploading(true);
+    setUploadProgress(10);
+
+    const processedImages = [];
+    let count = 0;
+
+    files.forEach((file) => {
+      // Validate file format
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+      if (!validTypes.includes(file.type.toLowerCase())) {
+        setUploadError('❌ Unsupported file format. Please upload JPG, JPEG, PNG, or WebP images.');
+        setIsUploading(false);
+        setUploadProgress(0);
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const maxDim = 800;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Get compressed WebP / JPEG data URL
+          const compressedDataUrl = canvas.toDataURL('image/webp', 0.85);
+          processedImages.push(compressedDataUrl);
+          count++;
+
+          const progress = Math.round((count / files.length) * 100);
+          setUploadProgress(progress);
+
+          if (count === files.length) {
+            setUploadedImages((prev) => [...prev, ...processedImages]);
+            setIsUploading(false);
+            setUploadProgress(0);
+          }
+        };
+        img.onerror = () => {
+          setUploadError('❌ Failed to process image file. Please try another file.');
+          setIsUploading(false);
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeUploadedImage = (indexToRemove) => {
+    setUploadedImages((prev) => prev.filter((_, idx) => idx !== indexToRemove));
+  };
+
+  const handleCreateProduct = (e) => {
+    e.preventDefault();
+    setIsProductAdded(true);
+
+    const mainImg = uploadedImages.length > 0
+      ? uploadedImages[0]
+      : assetPath('/assets/images/sovereign_red_roses_1785005575575.png');
+
+    const newBouquet = {
+      id: `bouq-${Date.now()}`,
+      name: newTitle,
+      tagline: newTagline,
+      description: newTagline,
+      priceUSD: parseFloat(newPrice) || 390,
+      originalPriceUSD: newDiscountPrice ? parseFloat(newDiscountPrice) : null,
+      rating: 5.0,
+      reviewsCount: 1,
+      category: newCategory,
+      occasion: newCategory === 'Wedding' ? 'Wedding' : 'Anniversary',
+      image: mainImg,
+      images: uploadedImages.length > 0 ? uploadedImages : [mainImg],
+      stock: parseInt(newStock) || 50,
+      availability: newAvailability,
+      deliveryTime: newDeliveryTime,
+      tags: newTags ? newTags.split(',').map((t) => t.trim()) : ['Handmade', 'Luxury'],
+      isFeatured: isFeatured,
+      badge: isFeatured ? 'Featured Luxury' : 'New Arrival',
+      isNew: true,
+      is3D: false,
+      flowerTypes: ['Rare Custom Import']
+    };
+
+    addProduct(newBouquet);
+
+    setTimeout(() => {
+      setIsProductAdded(false);
+      setNewTitle('');
+      setNewTagline('');
+      setNewPrice('550');
+      setNewDiscountPrice('');
+      setUploadedImages([]);
+      setActiveTab('inventory'); // Switch to inventory tab to view published product
+    }, 1200);
   };
 
   if (!isAdminOpen) return null;
@@ -138,91 +274,15 @@ export default function AdminPortalModal() {
 
             <button
               type="submit"
-              className="w-full py-3.5 rounded-full bg-gold-gradient text-obsidian-950 font-serif font-bold text-xs uppercase tracking-widest shadow-gold-sm hover:scale-[1.02] active:scale-95 transition-all"
+              className="w-full py-3.5 rounded-full bg-gold-gradient text-obsidian-950 font-serif font-bold text-xs uppercase tracking-widest shadow-gold-sm hover:scale-[1.02] transition-transform"
             >
-              Unlock Command Panel
+              Authenticate VIP Access
             </button>
           </form>
         </div>
       </div>
     );
   }
-
-  const updateOrderStatus = (orderId, newStatus) => {
-    setOrders((prev) =>
-      prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o))
-    );
-  };
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const maxDim = 800;
-          let width = img.width;
-          let height = img.height;
-
-          if (width > maxDim || height > maxDim) {
-            if (width > height) {
-              height = Math.round((height * maxDim) / width);
-              width = maxDim;
-            } else {
-              width = Math.round((width * maxDim) / height);
-              height = maxDim;
-            }
-          }
-
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
-
-          // Get compressed data URL
-          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.75);
-          setNewImage(compressedDataUrl);
-        };
-        img.src = event.target.result;
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleCreateProduct = (e) => {
-    e.preventDefault();
-    setIsProductAdded(true);
-
-    const newBouquet = {
-      id: `bouq-${Date.now()}`,
-      name: newTitle,
-      tagline: newTagline,
-      priceUSD: parseFloat(newPrice) || 390,
-      rating: 5.0,
-      reviewsCount: 1,
-      category: newCategory,
-      occasion: newCategory === 'Wedding' ? 'Wedding' : 'Anniversary',
-      image: newImage || assetPath('/assets/images/sovereign_red_roses_1785005575575.png'),
-      badge: 'New Arrival',
-      isNew: true,
-      is3D: false,
-      flowerTypes: ['Rare Custom Import'],
-      description: newTagline
-    };
-
-    addProduct(newBouquet);
-
-    setTimeout(() => {
-      setIsProductAdded(false);
-      setNewTitle('');
-      setNewTagline('');
-      setNewPrice('550');
-      setNewImage('');
-      setActiveTab('inventory'); // Go back to inventory tab to see the new product at the very top!
-    }, 1200);
-  };
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden bg-obsidian-950/95 backdrop-blur-2xl p-3 sm:p-6 flex items-center justify-center animate-fadeIn">
@@ -248,24 +308,28 @@ export default function AdminPortalModal() {
           </div>
 
           <div className="flex items-center gap-2">
+            <span className="px-3 py-1.5 rounded-full bg-emerald-950 border border-emerald-500/40 text-emerald-400 text-xs flex items-center gap-1.5 font-mono">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+              Admin Backend Active
+            </span>
             <button
               onClick={() => setIsAdminOpen(false)}
-              className="px-4 py-2 rounded-full border border-gold-500/40 text-gold-300 hover:bg-gold-500/20 text-xs font-serif font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all"
+              className="p-2 rounded-full bg-obsidian-900 border border-gold-500/30 text-pearl-300 hover:text-gold-400 transition-colors"
+              aria-label="Close Portal"
             >
-              <X className="w-4 h-4" />
-              <span>Exit Admin Portal</span>
+              <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        {/* Navigation Tabs */}
-        <div className="flex items-center gap-2 overflow-x-auto py-3 border-b border-gold-500/15 text-xs">
+        {/* Tab Navigation */}
+        <div className="flex items-center gap-2 border-b border-gold-500/20 overflow-x-auto py-2">
           {[
-            { id: 'dashboard', label: '📊 Dashboard & Analytics', icon: LayoutDashboard },
+            { id: 'dashboard', label: '📊 Command Dashboard', icon: LayoutDashboard },
             { id: 'orders', label: '📦 Live Orders Manager', icon: Package },
-            { id: 'inventory', label: '💐 Stem Inventory', icon: Boxes },
+            { id: 'inventory', label: '🌹 Stem & Catalog Vault', icon: Boxes },
             { id: 'appointments', label: '📅 VIP Consultations', icon: Calendar },
-            { id: 'new-product', label: '➕ Add New Bouquet', icon: PlusCircle },
+            { id: 'new-product', label: '✨ Publish New Bouquet', icon: PlusCircle },
           ].map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -273,131 +337,80 @@ export default function AdminPortalModal() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-4 py-2 rounded-full font-serif font-bold transition-all whitespace-nowrap flex items-center gap-2 ${
+                className={`px-4 py-2.5 rounded-full text-xs font-serif font-bold transition-all flex items-center gap-2 shrink-0 ${
                   isActive
                     ? 'bg-gold-gradient text-obsidian-950 shadow-gold-sm'
-                    : 'bg-obsidian-900 border border-gold-500/20 text-pearl-300 hover:border-gold-500/40 hover:text-gold-300'
+                    : 'text-pearl-300 hover:text-gold-300 hover:bg-gold-500/10'
                 }`}
               >
-                <Icon className="w-3.5 h-3.5" />
+                <Icon className="w-4 h-4" />
                 <span>{tab.label}</span>
               </button>
             );
           })}
         </div>
 
-        {/* Main Portal View Area */}
-        <div className="flex-1 overflow-y-auto py-6 space-y-6 pr-2">
+        {/* Main Content Area */}
+        <div className="flex-1 overflow-y-auto py-6 pr-2">
           
-          {/* TAB 1: DASHBOARD ANALYTICS */}
+          {/* TAB 1: COMMAND DASHBOARD */}
           {activeTab === 'dashboard' && (
             <div className="space-y-6 animate-fadeIn">
               
-              {/* KPI Cards Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                
-                <div className="glass-panel p-5 rounded-2xl border border-gold-500/30 space-y-2">
-                  <div className="flex items-center justify-between text-xs text-pearl-300">
-                    <span>Live Revenue</span>
-                    <DollarSign className="w-4 h-4 text-gold-400" />
+              {/* Traffic Summary Widget */}
+              <div className="glass-panel p-5 rounded-2xl border border-gold-500/25 space-y-4">
+                <div className="flex items-center justify-between border-b border-gold-500/15 pb-3">
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-gold-400" />
+                    <h4 className="font-serif font-bold text-base text-pearl-50">Live Traffic & Pageviews</h4>
                   </div>
-                  <span className="text-2xl font-serif font-bold text-gold-gradient block">
-                    {formatPrice(orders.reduce((acc, o) => acc + o.amountUSD, 0))}
-                  </span>
-                  <span className="text-[10px] text-emerald-400 font-medium">
-                    {orders.length === 0 ? "No sales recorded yet" : `Based on ${orders.length} orders`}
-                  </span>
-                </div>
 
-                <div className="glass-panel p-5 rounded-2xl border border-gold-500/30 space-y-2">
-                  <div className="flex items-center justify-between text-xs text-pearl-300">
-                    <span>Active VIP Orders</span>
-                    <Package className="w-4 h-4 text-gold-400" />
+                  <div className="flex items-center gap-1.5 bg-obsidian-900 p-1 rounded-full border border-gold-500/20 text-[11px]">
+                    {['today', 'week', 'month', 'allTime'].map((pd) => (
+                      <button
+                        key={pd}
+                        onClick={() => setTrafficPeriod(pd)}
+                        className={`px-3 py-1 rounded-full uppercase font-serif transition-colors ${
+                          trafficPeriod === pd
+                            ? 'bg-gold-500/30 text-gold-300 font-bold'
+                            : 'text-pearl-400 hover:text-pearl-200'
+                        }`}
+                      >
+                        {pd}
+                      </button>
+                    ))}
                   </div>
-                  <span className="text-2xl font-serif font-bold text-pearl-50 block">{orders.length} Orders</span>
-                  <span className="text-[10px] text-gold-300 font-medium">
-                    {orders.filter(o => o.status === 'In Preparation').length} preparing • {orders.filter(o => o.status === 'Out for Delivery').length} out
-                  </span>
                 </div>
 
-                <div className="glass-panel p-5 rounded-2xl border border-gold-500/30 space-y-2">
-                  <div className="flex items-center justify-between text-xs text-pearl-300">
-                    <span>Stem Inventory Integrity</span>
-                    <Boxes className="w-4 h-4 text-gold-400" />
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2">
+                  <div className="bg-obsidian-900/60 p-4 rounded-xl border border-gold-500/15">
+                    <span className="text-[10px] text-pearl-400 uppercase tracking-widest block">Active Pageviews</span>
+                    <span className="text-2xl font-serif font-bold text-gold-gradient">
+                      {trafficData[trafficPeriod].visitors}
+                    </span>
                   </div>
-                  <span className="text-2xl font-serif font-bold text-pearl-50 block">
-                    {inventory.reduce((acc, item) => acc + item.stock, 0).toLocaleString()} Stems
-                  </span>
-                  <span className="text-[10px] text-emerald-400 font-medium">
-                    {inventory.length === 0 ? "Inventory empty" : `${inventory.filter(i => i.status === 'Low Stock').length} low stock variety`}
-                  </span>
-                </div>
 
-                <div className="glass-panel p-5 rounded-2xl border border-gold-500/30 space-y-2">
-                  <div className="flex items-center justify-between text-xs text-pearl-300">
-                    <span>VIP Consultations</span>
-                    <Calendar className="w-4 h-4 text-gold-400" />
+                  <div className="bg-obsidian-900/60 p-4 rounded-xl border border-gold-500/15">
+                    <span className="text-[10px] text-pearl-400 uppercase tracking-widest block">Total Sales Revenue</span>
+                    <span className="text-2xl font-serif font-bold text-emerald-400">
+                      {formatPrice(orders.reduce((acc, o) => acc + o.amountUSD, 0))}
+                    </span>
                   </div>
-                  <span className="text-2xl font-serif font-bold text-pearl-50 block">{appointments.length} Booked</span>
-                  <span className="text-[10px] text-gold-300 font-medium">Live bookings from consultations desk</span>
+
+                  <div className="bg-obsidian-900/60 p-4 rounded-xl border border-gold-500/15">
+                    <span className="text-[10px] text-pearl-400 uppercase tracking-widest block">Total Confirmed Orders</span>
+                    <span className="text-2xl font-serif font-bold text-pearl-50">
+                      {orders.length} Orders
+                    </span>
+                  </div>
+
+                  <div className="bg-obsidian-900/60 p-4 rounded-xl border border-gold-500/15">
+                    <span className="text-[10px] text-pearl-400 uppercase tracking-widest block">Catalog Designs</span>
+                    <span className="text-2xl font-serif font-bold text-gold-300">
+                      {products.length} Bouquets
+                    </span>
+                  </div>
                 </div>
-
-              </div>
-
-              {/* Regional Sales Breakdown & Activity */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                
-                <div className="lg:col-span-7 glass-panel p-6 rounded-2xl border border-gold-500/20 space-y-4">
-                  <h4 className="font-serif font-bold text-base text-pearl-50">Global Boutique Revenue Share</h4>
-                  
-                  {orders.length === 0 ? (
-                    <div className="text-center py-16 text-xs text-pearl-400 font-light">
-                      No sales recorded yet. Once checkout orders are placed, distribution details will populate here.
-                    </div>
-                  ) : (
-                    <div className="space-y-3 text-xs">
-                      <div>
-                        <div className="flex justify-between text-pearl-200 mb-1">
-                          <span>New York Suite Delivery</span>
-                          <span className="font-bold text-gold-400">100% ({formatPrice(orders.reduce((acc, o) => acc + o.amountUSD, 0))})</span>
-                        </div>
-                        <div className="w-full bg-obsidian-900 h-2 rounded-full overflow-hidden">
-                          <div className="bg-gold-gradient h-full w-full"></div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div className="lg:col-span-5 glass-panel p-6 rounded-2xl border border-gold-500/20 space-y-4">
-                  <h4 className="font-serif font-bold text-base text-pearl-50">Recent VIP Activity</h4>
-                  
-                  {orders.length === 0 && appointments.length === 0 ? (
-                    <div className="text-center py-16 text-xs text-pearl-400 font-light">
-                      No recent activities recorded.
-                    </div>
-                  ) : (
-                    <div className="space-y-3 text-xs text-pearl-300">
-                      {[
-                        ...orders.map(o => ({ type: 'order', id: o.id, text: `${o.product} • New York`, amount: o.amountUSD, title: `New Order #${o.id}` })),
-                        ...appointments.map(a => ({ type: 'appt', id: a.id, text: `${a.occasion} • ${a.format}`, title: 'Consultation Booked', status: 'Confirmed' }))
-                      ].slice(0, 4).map((act, idx) => (
-                        <div key={idx} className="p-3 rounded-xl bg-obsidian-900 border border-gold-500/15 flex items-center justify-between">
-                          <div>
-                            <span className="font-bold text-pearl-50 block">{act.title}</span>
-                            <span className="text-[10px] text-pearl-400 line-clamp-1">{act.text}</span>
-                          </div>
-                          {act.type === 'order' ? (
-                            <span className="text-gold-gradient font-bold">{formatPrice(act.amount)}</span>
-                          ) : (
-                            <span className="text-emerald-400 font-bold">{act.status}</span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
               </div>
 
             </div>
@@ -407,205 +420,101 @@ export default function AdminPortalModal() {
           {activeTab === 'orders' && (
             <div className="space-y-4 animate-fadeIn">
               <div className="flex items-center justify-between">
-                <h4 className="font-serif font-bold text-lg text-pearl-50">Active Orders Management</h4>
-                <span className="text-xs text-pearl-400">Total: {orders.length} Active Orders</span>
+                <h4 className="font-serif font-bold text-lg text-pearl-50">Confirmed Customer Orders</h4>
+                <span className="text-xs text-pearl-400">Total: {orders.length} Confirmed Orders</span>
               </div>
 
-              <div className="space-y-3">
-                {orders.length === 0 ? (
-                  <div className="text-center py-16 space-y-3 border border-gold-500/10 rounded-2xl bg-obsidian-900/40">
-                    <Package className="w-12 h-12 text-gold-500/30 mx-auto" />
-                    <p className="font-serif text-pearl-200 text-base">No live orders received yet.</p>
-                    <p className="text-xs text-pearl-400 font-light">Acquire items from the boutique shop page to see orders populate here.</p>
-                  </div>
-                ) : (
-                  orders.map((order) => (
-                    <div
-                      key={order.id}
-                      className="glass-panel p-5 rounded-2xl border border-gold-500/20 space-y-3"
-                    >
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gold-500/15 pb-3">
+              {orders.length === 0 ? (
+                <div className="text-center py-16 space-y-3 border border-gold-500/10 rounded-2xl bg-obsidian-900/40">
+                  <Package className="w-12 h-12 text-gold-500/30 mx-auto" />
+                  <p className="font-serif text-pearl-200 text-base">No live orders received yet.</p>
+                  <p className="text-xs text-pearl-400 font-light">Acquire items from the boutique shop page to see orders populate here.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {orders.map((order) => (
+                    <div key={order.id} className="glass-panel p-5 rounded-2xl border border-gold-500/20 space-y-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gold-500/15 pb-3 gap-2">
                         <div>
-                          <span className="font-serif font-bold text-base text-gold-gradient">{order.id}</span>
-                          <span className="text-xs text-pearl-200 ml-3">Client: <strong>{order.client}</strong></span>
+                          <span className="text-xs font-mono font-bold text-gold-400">{order.id}</span>
+                          <h5 className="font-serif font-bold text-base text-pearl-50">{order.customerInfo?.fullName || order.client || 'Valued Customer'}</h5>
+                          <p className="text-[11px] text-pearl-400 font-mono">{order.customerInfo?.mobileNumber} • {order.customerInfo?.email || order.userEmail}</p>
                         </div>
-                        <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase font-serif ${
-                          order.status === 'Out for Delivery' ? 'bg-emerald-900/60 border border-emerald-500 text-emerald-300' : 'bg-gold-500/20 border border-gold-400 text-gold-300'
-                        }`}>
-                          {order.status}
-                        </span>
+                        <div className="text-left sm:text-right">
+                          <span className="text-sm font-serif font-bold text-emerald-400 block">{formatPrice(order.amountUSD)}</span>
+                          <span className="text-[10px] text-pearl-300">{order.date} ({order.timeSlot})</span>
+                        </div>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-pearl-300 font-light">
-                        <div><strong>Arrangement:</strong> {order.product}</div>
-                        <div><strong>Delivery Slot:</strong> {order.timeSlot}</div>
-                        <div><strong>Investment:</strong> <span className="font-serif font-bold text-gold-400">{formatPrice(order.amountUSD)}</span></div>
-                      </div>
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                        <div className="space-y-1">
+                          <p className="text-pearl-300 font-light">
+                            <strong>Shipping Address:</strong> {order.location}
+                          </p>
+                          <p className="text-pearl-300 font-light">
+                            <strong>Payment Method:</strong> {order.paymentMethod} (ID: {order.paymentId})
+                          </p>
+                        </div>
 
-                      <div className="pt-2 flex flex-wrap items-center gap-2 border-t border-gold-500/10">
-                        <span className="text-[11px] text-pearl-400 font-medium">Update VIP Status:</span>
-                        {['In Preparation', 'Quality Checked', 'Out for Delivery', 'Delivered'].map((st) => (
-                          <button
-                            key={st}
-                            onClick={() => updateOrderStatus(order.id, st)}
-                            className={`px-3 py-1 rounded-full text-[10px] uppercase font-bold transition-all ${
-                              order.status === st
-                                ? 'bg-gold-500 text-obsidian-950'
-                                : 'bg-obsidian-900 border border-gold-500/20 text-pearl-300 hover:border-gold-500/40'
-                            }`}
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="text-pearl-300 font-bold text-[11px]">Status:</span>
+                          <select
+                            value={order.status}
+                            onChange={(e) => updateOrderStatus(order.id, e.target.value)}
+                            className="bg-obsidian-900 border border-gold-500/30 rounded-xl p-2 text-xs text-gold-300 outline-none"
                           >
-                            {st}
-                          </button>
-                        ))}
+                            <option value="Order Placed & Payment Confirmed">Order Placed & Payment Confirmed</option>
+                            <option value="Preparing Handmade Gift">Preparing Handmade Gift</option>
+                            <option value="Master Architect Inspecting">Master Architect Inspecting</option>
+                            <option value="Out for White-Glove Delivery">Out for White-Glove Delivery</option>
+                            <option value="Delivered & Handed Over">Delivered & Handed Over</option>
+                          </select>
+                        </div>
                       </div>
                     </div>
-                  ))
-                )}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
-          {/* TAB 3: STEM INVENTORY */}
+          {/* TAB 3: INVENTORY VAULT */}
           {activeTab === 'inventory' && (
-            <div className="space-y-4 animate-fadeIn">
+            <div className="space-y-6 animate-fadeIn">
               <div className="flex items-center justify-between">
-                <h4 className="font-serif font-bold text-lg text-pearl-50">Rare Stem & Flower Inventory</h4>
-                <span className="text-xs text-emerald-400 font-medium">All stems climate-controlled at 4°C</span>
+                <h4 className="font-serif font-bold text-lg text-pearl-50">Catalog & Stock Vault</h4>
+                <span className="text-xs text-gold-400 font-medium">Total: {products.length} Products Live</span>
               </div>
 
-              {/* Add Inventory Item Inline Form */}
-              <form onSubmit={handleAddInventory} className="glass-panel p-4 rounded-2xl border border-gold-500/20 grid grid-cols-1 sm:grid-cols-5 gap-3 items-end">
-                <div className="sm:col-span-2">
-                  <label className="text-[10px] uppercase font-bold text-gold-400 block mb-1">Stem Variety Name:</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Ecuadorian Grand Prix Red Roses"
-                    className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-2.5 text-xs outline-none text-pearl-100 placeholder-pearl-400/50"
-                    value={invName}
-                    onChange={(e) => setInvName(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label className="text-[10px] uppercase font-bold text-gold-400 block mb-1">Category:</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Roses"
-                    className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-2.5 text-xs outline-none text-pearl-100 placeholder-pearl-400/50"
-                    value={invCat}
-                    onChange={(e) => setInvCat(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label className="text-[10px] uppercase font-bold text-gold-400 block mb-1">Initial Stock:</label>
-                  <input
-                    type="number"
-                    required
-                    placeholder="e.g. 500"
-                    className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-2.5 text-xs outline-none text-pearl-100 placeholder-pearl-400/50"
-                    value={invStock}
-                    onChange={(e) => setInvStock(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label className="text-[10px] uppercase font-bold text-gold-400 block mb-1">Unit Cost ($):</label>
-                  <div className="flex gap-2">
-                    <input
-                      type="number"
-                      step="0.01"
-                      required
-                      placeholder="e.g. 2.50"
-                      className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-2.5 text-xs outline-none text-pearl-100 placeholder-pearl-400/50"
-                      value={invCost}
-                      onChange={(e) => setInvCost(e.target.value)}
-                    />
-                    <button
-                      type="submit"
-                      className="px-4 py-2.5 rounded-xl bg-gold-gradient text-obsidian-950 font-serif font-bold text-xs uppercase hover:scale-105 active:scale-95 transition-all whitespace-nowrap"
-                    >
-                      Add
-                    </button>
-                  </div>
-                </div>
-              </form>
-
+              {/* Published Catalog Table */}
               <div className="glass-panel rounded-2xl overflow-hidden border border-gold-500/20">
-                {inventory.length === 0 ? (
-                  <div className="text-center py-16 space-y-3">
-                    <Boxes className="w-12 h-12 text-gold-500/30 mx-auto" />
-                    <p className="font-serif text-pearl-200 text-base">Your climate-controlled inventory is empty.</p>
-                    <p className="text-xs text-pearl-400 font-light">Add new stem varieties using the form above to populate the ledger.</p>
-                  </div>
-                ) : (
-                  <table className="w-full text-left text-xs text-pearl-200">
-                    <thead className="bg-obsidian-900 border-b border-gold-500/20 text-gold-400 uppercase font-serif">
-                      <tr>
-                        <th className="p-3.5">Stem Variety</th>
-                        <th className="p-3.5">Category</th>
-                        <th className="p-3.5">Current Stock</th>
-                        <th className="p-3.5">Unit Cost</th>
-                        <th className="p-3.5">Status</th>
+                <table className="w-full text-left text-xs text-pearl-200">
+                  <thead className="bg-obsidian-900 border-b border-gold-500/20 text-gold-400 uppercase font-serif">
+                    <tr>
+                      <th className="p-3.5">Image</th>
+                      <th className="p-3.5">Bouquet Name</th>
+                      <th className="p-3.5">Category</th>
+                      <th className="p-3.5">Occasion</th>
+                      <th className="p-3.5">VIP Price</th>
+                      <th className="p-3.5">Rating</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gold-500/10">
+                    {products.map((p) => (
+                      <tr key={p.id} className="hover:bg-gold-500/5 transition-colors">
+                        <td className="p-3.5">
+                          <img src={p.image} alt={p.name} className="w-10 h-10 object-cover rounded-lg border border-gold-500/20" />
+                        </td>
+                        <td className="p-3.5 font-semibold text-pearl-50">{p.name}</td>
+                        <td className="p-3.5 text-pearl-300">{p.category}</td>
+                        <td className="p-3.5 text-pearl-300">{p.occasion || p.category}</td>
+                        <td className="p-3.5 font-bold text-gold-gradient">{formatPrice(p.priceUSD)}</td>
+                        <td className="p-3.5 text-gold-400">★ {p.rating || '5.0'} ({p.reviewsCount || 1})</td>
                       </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gold-500/10">
-                      {inventory.map((item) => (
-                        <tr key={item.id} className="hover:bg-gold-500/5 transition-colors">
-                          <td className="p-3.5 font-semibold text-pearl-50">{item.name}</td>
-                          <td className="p-3.5 text-pearl-300">{item.category}</td>
-                          <td className="p-3.5 font-bold text-gold-gradient">{item.stock} Stems</td>
-                          <td className="p-3.5">{formatPrice(item.unitCostUSD)}</td>
-                          <td className="p-3.5">
-                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                              item.status === 'Low Stock' ? 'bg-red-950 text-red-400 border border-red-500/40' : 'bg-emerald-950 text-emerald-300 border border-emerald-500/40'
-                            }`}>
-                              {item.status}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
+                    ))}
+                  </tbody>
+                </table>
               </div>
-
-              {/* Published Bouquets Catalog */}
-              <div className="pt-8 space-y-4">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-serif font-bold text-lg text-pearl-50">Published Haute Couture Bouquets</h4>
-                  <span className="text-xs text-gold-400 font-medium">Total: {products.length} Designs (Newest First)</span>
-                </div>
-                
-                <div className="glass-panel rounded-2xl overflow-hidden border border-gold-500/20">
-                  <table className="w-full text-left text-xs text-pearl-200">
-                    <thead className="bg-obsidian-900 border-b border-gold-500/20 text-gold-400 uppercase font-serif">
-                      <tr>
-                        <th className="p-3.5">Image</th>
-                        <th className="p-3.5">Bouquet Name</th>
-                        <th className="p-3.5">Category</th>
-                        <th className="p-3.5">Occasion</th>
-                        <th className="p-3.5">VIP Price</th>
-                        <th className="p-3.5">Rating</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gold-500/10">
-                      {products.map((p) => (
-                        <tr key={p.id} className="hover:bg-gold-500/5 transition-colors">
-                          <td className="p-3.5">
-                            <img src={p.image} alt={p.name} className="w-10 h-10 object-cover rounded-lg border border-gold-500/20" />
-                          </td>
-                          <td className="p-3.5 font-semibold text-pearl-50">{p.name}</td>
-                          <td className="p-3.5 text-pearl-300">{p.category}</td>
-                          <td className="p-3.5 text-pearl-300">{p.occasion}</td>
-                          <td className="p-3.5 font-bold text-gold-gradient">{formatPrice(p.priceUSD)}</td>
-                          <td className="p-3.5 text-gold-400">★ {p.rating} ({p.reviewsCount})</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
             </div>
           )}
 
@@ -627,9 +536,6 @@ export default function AdminPortalModal() {
                       <span className="text-[10px] uppercase font-bold text-gold-400">{appt.occasion}</span>
                       <h5 className="font-serif font-bold text-base text-pearl-50">{appt.client}</h5>
                       <p className="text-xs text-pearl-300 font-light">Date: {appt.date} • {appt.time} ({appt.format})</p>
-                      <span className="px-3 py-1 rounded-full bg-gold-500/20 text-gold-300 text-[10px] inline-block font-bold">
-                        Master Architect Assigned
-                      </span>
                     </div>
                   ))
                 )}
@@ -637,36 +543,43 @@ export default function AdminPortalModal() {
             </div>
           )}
 
-          {/* TAB 5: ADD NEW BOUQUET */}
+          {/* TAB 5: PUBLISH NEW BOUQUET (With Multiple Image Upload & Complete Product Fields) */}
           {activeTab === 'new-product' && (
-            <div className="max-w-2xl mx-auto glass-panel p-6 rounded-2xl border border-gold-500/30 space-y-5 animate-fadeIn">
-              <h4 className="font-serif font-bold text-xl text-pearl-50 text-center">Add New Haute Couture Arrangement</h4>
+            <div className="max-w-3xl mx-auto glass-panel p-6 rounded-2xl border border-gold-500/30 space-y-6 animate-fadeIn">
+              <div className="text-center space-y-1">
+                <h4 className="font-serif font-bold text-xl text-pearl-50">Publish New Haute Couture Product</h4>
+                <p className="text-xs text-pearl-300 font-light">Admin product creator with multiple image upload & automatic WebP optimization.</p>
+              </div>
               
               {isProductAdded ? (
-                <div className="p-4 rounded-2xl bg-gold-500/20 border border-gold-400 text-gold-300 text-center font-serif font-bold text-xs uppercase tracking-widest animate-fadeIn">
-                  ✨ Product Published Successfully to Haute Couture Catalog!
+                <div className="p-4 rounded-2xl bg-gold-500/20 border border-gold-400 text-gold-300 text-center font-serif font-bold text-xs uppercase tracking-widest animate-fadeIn space-y-2">
+                  <CheckCircle2 className="w-8 h-8 text-gold-400 mx-auto" />
+                  <p>✨ Product Published Successfully to Haute Couture Catalog!</p>
                 </div>
               ) : (
-                <form onSubmit={handleCreateProduct} className="space-y-4">
+                <form onSubmit={handleCreateProduct} className="space-y-4 text-xs">
+                  
+                  {/* Product Title */}
                   <div>
-                    <label className="text-xs text-pearl-300 block mb-1">Bouquet / Product Title:</label>
+                    <label className="text-pearl-300 block mb-1 font-semibold">Product Name / Title *</label>
                     <input
                       type="text"
                       required
                       value={newTitle}
                       onChange={(e) => setNewTitle(e.target.value)}
-                      placeholder="e.g. The Imperial Emerald Orchid Cloche"
-                      className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-3 text-xs text-pearl-100 outline-none"
+                      placeholder="e.g. The Sovereign Royal Velvet Roses"
+                      className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-3 text-pearl-100 outline-none focus:border-gold-400"
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
+                  {/* Category & Prices */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
-                      <label className="text-xs text-pearl-300 block mb-1">Category:</label>
+                      <label className="text-pearl-300 block mb-1 font-semibold">Category *</label>
                       <select
                         value={newCategory}
                         onChange={(e) => setNewCategory(e.target.value)}
-                        className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-3 text-xs text-pearl-100 outline-none"
+                        className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-3 text-pearl-100 outline-none focus:border-gold-400"
                       >
                         <option value="Featured">Featured</option>
                         <option value="Wedding">Wedding</option>
@@ -677,71 +590,172 @@ export default function AdminPortalModal() {
                     </div>
 
                     <div>
-                      <label className="text-xs text-pearl-300 block mb-1">VIP Price ($ USD):</label>
+                      <label className="text-pearl-300 block mb-1 font-semibold">Selling Price ($ USD) *</label>
                       <input
                         type="number"
                         required
                         value={newPrice}
                         onChange={(e) => setNewPrice(e.target.value)}
-                        className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-3 text-xs text-pearl-100 outline-none"
+                        placeholder="550"
+                        className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-3 text-pearl-100 outline-none focus:border-gold-400"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-pearl-300 block mb-1 font-semibold">Original Price ($ USD) (Optional)</label>
+                      <input
+                        type="number"
+                        value={newDiscountPrice}
+                        onChange={(e) => setNewDiscountPrice(e.target.value)}
+                        placeholder="650"
+                        className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-3 text-pearl-100 outline-none focus:border-gold-400"
                       />
                     </div>
                   </div>
 
-                  {/* Photo Upload Field */}
-                  <div>
-                    <label className="text-xs text-pearl-300 block mb-1">Bouquet Photo:</label>
-                    <div className="flex flex-col sm:flex-row items-center gap-4">
-                      {/* Image Preview Box */}
-                      <div className="w-20 h-20 rounded-xl bg-obsidian-900 border border-gold-500/20 overflow-hidden flex items-center justify-center shrink-0">
-                        {newImage ? (
-                          <img src={newImage} alt="Bouquet Preview" className="w-full h-full object-cover" />
-                        ) : (
-                          <span className="text-[10px] text-pearl-400">No Image</span>
-                        )}
+                  {/* Stock Quantity, Availability & Delivery Time */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                      <label className="text-pearl-300 block mb-1 font-semibold">Stock Quantity *</label>
+                      <input
+                        type="number"
+                        required
+                        value={newStock}
+                        onChange={(e) => setNewStock(e.target.value)}
+                        placeholder="50"
+                        className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-3 text-pearl-100 outline-none focus:border-gold-400"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-pearl-300 block mb-1 font-semibold">Availability *</label>
+                      <select
+                        value={newAvailability}
+                        onChange={(e) => setNewAvailability(e.target.value)}
+                        className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-3 text-pearl-100 outline-none focus:border-gold-400"
+                      >
+                        <option value="In Stock">In Stock</option>
+                        <option value="Pre-Order">Pre-Order</option>
+                        <option value="Limited Edition">Limited Edition</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="text-pearl-300 block mb-1 font-semibold">Delivery Window *</label>
+                      <select
+                        value={newDeliveryTime}
+                        onChange={(e) => setNewDeliveryTime(e.target.value)}
+                        className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-3 text-pearl-100 outline-none focus:border-gold-400"
+                      >
+                        <option value="Same-Day VIP Express">Same-Day VIP Express</option>
+                        <option value="24-Hour Delivery">24-Hour Delivery</option>
+                        <option value="Scheduled Delivery">Scheduled Delivery</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Multiple Product Images Upload & Preview Section (Issue 1) */}
+                  <div className="space-y-3 pt-2">
+                    <label className="text-pearl-300 block font-semibold">Product Images (JPG, JPEG, PNG, WebP) *</label>
+
+                    {uploadError && (
+                      <p className="text-xs text-red-400 bg-red-950/40 p-2.5 rounded-xl border border-red-500/30">{uploadError}</p>
+                    )}
+
+                    {/* Progress Indicator */}
+                    {isUploading && (
+                      <div className="space-y-1.5 p-3 rounded-xl bg-obsidian-900 border border-gold-500/30">
+                        <div className="flex items-center justify-between text-[11px] text-gold-300 font-bold">
+                          <span>Uploading & Optimizing Images...</span>
+                          <span>{uploadProgress}%</span>
+                        </div>
+                        <div className="w-full h-1.5 bg-obsidian-950 rounded-full overflow-hidden">
+                          <div className="h-full bg-gold-gradient transition-all duration-300" style={{ width: `${uploadProgress}%` }}></div>
+                        </div>
                       </div>
-                      
-                      <div className="flex-1 w-full space-y-2">
-                        {/* Hidden file input */}
+                    )}
+
+                    {/* Upload Drop Zone & Thumbnails */}
+                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                      {/* Image Upload Trigger Box */}
+                      <label
+                        htmlFor="multiple-product-images-input"
+                        className="h-24 rounded-xl border-2 border-dashed border-gold-500/40 hover:border-gold-400 bg-obsidian-900/60 flex flex-col items-center justify-center cursor-pointer transition-colors p-2 text-center group"
+                      >
+                        <UploadCloud className="w-6 h-6 text-gold-400 group-hover:scale-110 transition-transform mb-1" />
+                        <span className="text-[10px] text-gold-300 font-bold">Upload Photos</span>
+                        <span className="text-[9px] text-pearl-400">Multiple files supported</span>
                         <input
                           type="file"
-                          id="bouquet-photo-upload"
-                          accept="image/*"
-                          onChange={handleImageChange}
+                          id="multiple-product-images-input"
+                          multiple
+                          accept="image/jpeg,image/jpg,image/png,image/webp"
+                          onChange={handleMultipleImagesChange}
                           className="hidden"
                         />
-                        
-                        <div className="flex items-center gap-2">
-                          <label
-                            htmlFor="bouquet-photo-upload"
-                            className="px-4 py-2 rounded-xl bg-obsidian-900 border border-gold-500/30 hover:border-gold-500/60 text-gold-300 text-xs font-serif font-bold cursor-pointer transition-all select-none"
+                      </label>
+
+                      {/* Uploaded Thumbnails Preview Grid */}
+                      {uploadedImages.map((imgUrl, idx) => (
+                        <div key={idx} className="relative h-24 rounded-xl overflow-hidden border border-gold-500/30 group bg-obsidian-900">
+                          <img src={imgUrl} alt={`Product Upload ${idx + 1}`} className="w-full h-full object-cover" />
+                          <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-obsidian-950/80 text-gold-400 text-[8px] font-mono">
+                            {idx === 0 ? 'Cover' : `#${idx + 1}`}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeUploadedImage(idx)}
+                            className="absolute top-1 right-1 p-1 rounded-full bg-red-950/90 text-red-300 hover:text-white transition-colors"
+                            title="Remove Photo"
                           >
-                            Choose Image File
-                          </label>
-                          {newImage && (
-                            <button
-                              type="button"
-                              onClick={() => setNewImage('')}
-                              className="text-xs text-red-400 hover:text-red-300 font-medium"
-                            >
-                              Remove
-                            </button>
-                          )}
+                            <X className="w-3 h-3" />
+                          </button>
                         </div>
-                        <p className="text-[10px] text-pearl-400">Upload a custom bouquet image, or leave empty to use a default luxury visual.</p>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Tags & Description */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                    <div>
+                      <label className="text-pearl-300 block mb-1 font-semibold">Search Tags (Comma separated):</label>
+                      <input
+                        type="text"
+                        value={newTags}
+                        onChange={(e) => setNewTags(e.target.value)}
+                        placeholder="Ecuadorian, Velvet Box, Gold Trim"
+                        className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-3 text-pearl-100 outline-none focus:border-gold-400"
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between bg-obsidian-900 p-3 rounded-xl border border-gold-500/20">
+                      <div>
+                        <span className="text-pearl-100 font-semibold block">Featured Product Toggle</span>
+                        <span className="text-[10px] text-pearl-400">Show in Homepage Showcase</span>
                       </div>
+                      <button
+                        type="button"
+                        onClick={() => setIsFeatured(!isFeatured)}
+                        className={`w-12 h-6 rounded-full transition-colors relative p-1 ${
+                          isFeatured ? 'bg-gold-400' : 'bg-slate-700'
+                        }`}
+                      >
+                        <div className={`w-4 h-4 rounded-full bg-obsidian-950 transition-transform ${
+                          isFeatured ? 'translate-x-6' : 'translate-x-0'
+                        }`}></div>
+                      </button>
                     </div>
                   </div>
 
                   <div>
-                    <label className="text-xs text-pearl-300 block mb-1">Tagline & Description:</label>
+                    <label className="text-pearl-300 block mb-1 font-semibold">Description & Crafting Details *</label>
                     <textarea
-                      rows="2"
+                      rows="3"
                       required
                       value={newTagline}
                       onChange={(e) => setNewTagline(e.target.value)}
-                      placeholder="Enter rare stem details, packaging type, and 24K gold trim info..."
-                      className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-3 text-xs text-pearl-100 outline-none"
+                      placeholder="Enter stem details, box material, 24K gold rose accents, and preservation instructions..."
+                      className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-3 text-pearl-100 outline-none focus:border-gold-400"
                     ></textarea>
                   </div>
 
@@ -749,7 +763,7 @@ export default function AdminPortalModal() {
                     type="submit"
                     className="w-full py-3.5 rounded-full bg-gold-gradient text-obsidian-950 font-serif font-bold text-xs uppercase tracking-widest shadow-gold-sm hover:scale-[1.02] transition-transform"
                   >
-                    Publish to Sovereign Catalog
+                    Publish Product Immediately
                   </button>
                 </form>
               )}

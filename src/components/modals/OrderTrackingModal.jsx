@@ -1,14 +1,24 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { generateInvoice } from '../../utils/invoiceGenerator';
-import { X, CheckCircle2, Clock, MapPin, Truck, ShieldCheck, Download, Package, ChevronDown } from 'lucide-react';
+import { X, CheckCircle2, Clock, MapPin, Truck, ShieldCheck, Download, Package, ChevronDown, Lock } from 'lucide-react';
 
 export default function OrderTrackingModal() {
-  const { isTrackingOpen, setIsTrackingOpen, orders, activeTrackingOrder, setActiveTrackingOrder, formatPrice } = useApp();
+  const {
+    isTrackingOpen,
+    setIsTrackingOpen,
+    orders,
+    activeTrackingOrder,
+    setActiveTrackingOrder,
+    formatPrice,
+    currentUser,
+    setIsAuthOpen,
+    setAuthMode
+  } = useApp();
 
   if (!isTrackingOpen) return null;
 
-  // Determine current active order (either user selected or latest created order)
+  // Determine current active order for logged-in user
   const currentOrder = activeTrackingOrder || (orders.length > 0 ? orders[0] : null);
 
   const trackingStages = [
@@ -32,122 +42,142 @@ export default function OrderTrackingModal() {
           <X className="w-5 h-5" />
         </button>
 
-        {/* Header & Order Switcher Dropdown */}
-        <div className="border-b border-gold-500/20 pb-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <span className="text-[10px] uppercase tracking-widest text-gold-400 font-bold">
-                Live VIP Order Tracking
-              </span>
-              <h3 className="font-serif font-bold text-xl text-pearl-50">
-                Order #{currentOrder ? currentOrder.id : 'BLM-889421'}
-              </h3>
+        {!currentOrder || orders.length === 0 ? (
+          /* Clean empty state for new visitors and users with no orders */
+          <div className="py-8 text-center space-y-4">
+            <div className="w-16 h-16 rounded-full bg-gold-500/10 border border-gold-400/30 flex items-center justify-center mx-auto text-gold-400">
+              <Package className="w-8 h-8" />
             </div>
-            <span className="px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400 text-emerald-300 text-xs font-bold font-serif animate-pulse">
-              {currentOrder ? (currentOrder.status || 'In Preparation') : 'In Preparation'}
-            </span>
-          </div>
-
-          {/* Order Switcher if user has multiple orders */}
-          {orders.length > 1 && (
-            <div className="flex items-center gap-2 text-xs">
-              <span className="text-pearl-300 font-serif">Select Order:</span>
-              <select
-                value={currentOrder?.id || ''}
-                onChange={(e) => {
-                  const selected = orders.find((o) => o.id === e.target.value);
-                  if (selected) setActiveTrackingOrder(selected);
+            <div className="space-y-1">
+              <h3 className="font-serif font-bold text-xl text-pearl-50">No Verified Orders Found</h3>
+              <p className="text-xs text-pearl-300 font-light max-w-xs mx-auto">
+                {currentUser
+                  ? 'You have not placed any orders with this account yet.'
+                  : 'Please sign in to your account to view your private order history and live delivery tracking.'}
+              </p>
+            </div>
+            {!currentUser && (
+              <button
+                onClick={() => {
+                  setIsTrackingOpen(false);
+                  setAuthMode('login');
+                  setIsAuthOpen(true);
                 }}
-                className="bg-obsidian-900 border border-gold-500/30 rounded-xl px-3 py-1.5 text-xs text-gold-300 outline-none font-mono"
+                className="px-6 py-2.5 rounded-full bg-gold-gradient text-obsidian-950 font-serif font-bold text-xs uppercase tracking-widest shadow-gold-sm hover:scale-[1.02] transition-transform"
               >
-                {orders.map((o) => (
-                  <option key={o.id} value={o.id}>
-                    {o.id} - {o.client} ({o.date})
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-        </div>
-
-        {/* Order Details Brief Box */}
-        {currentOrder && (
-          <div className="p-3.5 rounded-2xl bg-obsidian-900/90 border border-gold-500/20 text-xs space-y-1.5">
-            <div className="flex justify-between">
-              <span className="text-pearl-300">Recipient:</span>
-              <span className="font-bold text-pearl-100">{currentOrder.client}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-pearl-300">Delivery Address:</span>
-              <span className="font-bold text-pearl-100 truncate max-w-[220px]">{currentOrder.location}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-pearl-300">Total Investment:</span>
-              <span className="font-bold text-gold-300 font-serif">
-                {formatPrice(currentOrder.amountUSD || 450)}
-              </span>
-            </div>
+                Sign In to View Orders
+              </button>
+            )}
           </div>
-        )}
-
-        {/* Timeline Stages */}
-        <div className="space-y-3.5 relative py-1">
-          {trackingStages.map((step, idx) => (
-            <div key={idx} className="flex items-start gap-4">
-              <div className="flex flex-col items-center">
-                <div
-                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                    step.status === 'completed'
-                      ? 'bg-gold-500 text-obsidian-950'
-                      : step.status === 'active'
-                      ? 'bg-emerald-500 text-pearl-50 animate-pulse ring-4 ring-emerald-500/20'
-                      : 'bg-obsidian-900 border border-gold-500/20 text-pearl-400'
-                  }`}
-                >
-                  {step.status === 'completed' ? '✓' : idx + 1}
+        ) : (
+          <>
+            {/* Header & Order Switcher Dropdown */}
+            <div className="border-b border-gold-500/20 pb-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] uppercase tracking-widest text-gold-400 font-bold">
+                    Live VIP Order Tracking
+                  </span>
+                  <h3 className="font-serif font-bold text-xl text-pearl-50">
+                    Order #{currentOrder.id}
+                  </h3>
                 </div>
-                {idx < trackingStages.length - 1 && <div className="w-0.5 h-6 bg-gold-500/20 my-1"></div>}
+                <span className="px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400 text-emerald-300 text-xs font-bold font-serif animate-pulse">
+                  {currentOrder.status || 'In Preparation'}
+                </span>
               </div>
 
-              <div className="flex-1 min-w-0">
-                <h4 className={`text-xs font-serif font-bold ${step.status === 'active' ? 'text-gold-300' : 'text-pearl-100'}`}>
-                  {step.title}
-                </h4>
-                <p className="text-[11px] text-pearl-400">{step.time}</p>
+              {/* Order Switcher if user has multiple orders */}
+              {orders.length > 1 && (
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="text-pearl-300 font-serif">Select Order:</span>
+                  <select
+                    value={currentOrder.id}
+                    onChange={(e) => {
+                      const selected = orders.find((o) => o.id === e.target.value);
+                      if (selected) setActiveTrackingOrder(selected);
+                    }}
+                    className="bg-obsidian-900 border border-gold-500/30 rounded-xl px-3 py-1.5 text-xs text-gold-300 outline-none font-mono"
+                  >
+                    {orders.map((o) => (
+                      <option key={o.id} value={o.id}>
+                        {o.id} - {o.client} ({o.date})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
+
+            {/* Order Details Brief Box */}
+            <div className="p-3.5 rounded-2xl bg-obsidian-900/90 border border-gold-500/20 text-xs space-y-1.5">
+              <div className="flex justify-between">
+                <span className="text-pearl-300">Recipient:</span>
+                <span className="font-bold text-pearl-100">{currentOrder.client}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-pearl-300">Delivery Address:</span>
+                <span className="font-bold text-pearl-100 truncate max-w-[200px]">{currentOrder.location}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-pearl-300">Order Amount:</span>
+                <span className="font-bold text-gold-gradient">{formatPrice(currentOrder.amountUSD)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-pearl-300">Payment Ref:</span>
+                <span className="font-mono text-emerald-400 text-[10px]">{currentOrder.paymentId}</span>
               </div>
             </div>
-          ))}
-        </div>
 
-        {/* Driver & Delivery Concierge Card */}
-        <div className="p-4 rounded-2xl bg-obsidian-900 border border-gold-500/20 flex items-center justify-between text-xs">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gold-500/20 border border-gold-400/30 flex items-center justify-center text-gold-400 font-bold">
-              <Truck className="w-5 h-5" />
-            </div>
-            <div>
-              <span className="text-xs font-serif font-bold text-pearl-50 block">Concierge Vehicle #7</span>
-              <span className="text-[10px] text-pearl-400">Driver: Jean-Paul (Uniformed VIP White-Glove)</span>
-            </div>
-          </div>
-          <span className="text-xs font-serif font-bold text-gold-400 bg-gold-500/10 px-2.5 py-1 rounded-full border border-gold-500/20">
-            ETA: 20 Mins
-          </span>
-        </div>
+            {/* Timeline Stages */}
+            <div className="space-y-3">
+              <h4 className="font-serif font-bold text-xs uppercase text-gold-400 tracking-wider">
+                Live Status Roadmap
+              </h4>
 
-        {/* Action Buttons */}
-        {currentOrder && (
-          <div className="pt-2 flex justify-center">
+              <div className="relative pl-6 space-y-4 border-l-2 border-gold-500/30 ml-2">
+                {trackingStages.map((stage, idx) => (
+                  <div key={idx} className="relative flex items-center justify-between text-xs">
+                    <div
+                      className={`absolute -left-[31px] w-4 h-4 rounded-full border flex items-center justify-center ${
+                        stage.status === 'completed'
+                          ? 'bg-emerald-500 border-emerald-400 text-obsidian-950'
+                          : stage.status === 'active'
+                          ? 'bg-gold-400 border-gold-300 text-obsidian-950 animate-pulse'
+                          : 'bg-obsidian-900 border-gold-500/30 text-pearl-500'
+                      }`}
+                    >
+                      {stage.status === 'completed' && <CheckCircle2 className="w-3 h-3" />}
+                    </div>
+
+                    <span
+                      className={`font-serif ${
+                        stage.status === 'completed'
+                          ? 'text-pearl-100 font-semibold'
+                          : stage.status === 'active'
+                          ? 'text-gold-300 font-bold'
+                          : 'text-pearl-400 font-light'
+                      }`}
+                    >
+                      {stage.title}
+                    </span>
+
+                    <span className="text-[10px] font-mono text-pearl-400">{stage.time}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Download Tax Invoice Button */}
             <button
               onClick={() => generateInvoice(currentOrder)}
-              className="px-5 py-2.5 rounded-full bg-obsidian-900 border border-gold-400/40 text-gold-300 font-serif font-bold text-xs uppercase tracking-widest flex items-center gap-2 hover:bg-gold-500/10 transition-colors"
+              className="w-full py-3 rounded-2xl bg-obsidian-900 border border-gold-500/40 hover:border-gold-400 text-gold-300 font-serif font-bold text-xs flex items-center justify-center gap-2 transition-colors shadow-gold-sm"
             >
-              <Download className="w-4 h-4" />
-              <span>Download Tax Invoice</span>
+              <Download className="w-4 h-4 text-gold-400" />
+              <span>Download Official VIP Tax Invoice (PDF)</span>
             </button>
-          </div>
+          </>
         )}
-
       </div>
     </div>
   );

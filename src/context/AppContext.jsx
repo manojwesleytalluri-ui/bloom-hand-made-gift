@@ -12,11 +12,25 @@ export const currencies = {
 };
 
 export const AppProvider = ({ children }) => {
-  // Products Catalog State
-  const [products, setProducts] = useState(PRODUCTS);
+  // Products Catalog State (Persists admin added products)
+  const [products, setProducts] = useState(() => {
+    const saved = localStorage.getItem('bloom_custom_products');
+    if (saved) {
+      try {
+        const custom = JSON.parse(saved);
+        return [...custom, ...PRODUCTS];
+      } catch (e) {}
+    }
+    return PRODUCTS;
+  });
 
   const addProduct = (newProduct) => {
     setProducts((prev) => [newProduct, ...prev]);
+    try {
+      const saved = localStorage.getItem('bloom_custom_products');
+      const customList = saved ? JSON.parse(saved) : [];
+      localStorage.setItem('bloom_custom_products', JSON.stringify([newProduct, ...customList]));
+    } catch (e) {}
   };
 
   // Theme State
@@ -25,20 +39,46 @@ export const AppProvider = ({ children }) => {
   // Currency State
   const [currency, setCurrency] = useState('INR'); // Default to ₹ for Indian luxury market
 
-  // Cart & Wishlist State
-  const [cart, setCart] = useState([
-    {
-      id: 'bouq-1',
-      name: 'The Imperial Grand Velvet Roses',
-      priceUSD: 450,
-      image: assetPath('/assets/images/luxury_rose_bouquet_1785002544191.png'),
-      category: 'Featured',
-      quantity: 1,
-      variant: '100 Ecuadorian Stems in Black Velvet Box'
+  // Persistent Authentication State & User Session
+  const [currentUser, setCurrentUser] = useState(() => {
+    const saved = localStorage.getItem('bloom_auth_session');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        // fallback
+      }
     }
-  ]);
+    return null;
+  });
 
-  const [wishlist, setWishlist] = useState(['bouq-2', 'bouq-4']);
+  const isAuthenticated = !!currentUser;
+
+  // Cart State (Clean empty session for new visitors; loaded per user when logged in)
+  const [cart, setCart] = useState(() => {
+    const savedSession = localStorage.getItem('bloom_auth_session');
+    if (savedSession) {
+      try {
+        const user = JSON.parse(savedSession);
+        const userCart = localStorage.getItem(`bloom_cart_${user.email}`);
+        if (userCart) return JSON.parse(userCart);
+      } catch (e) {}
+    }
+    return [];
+  });
+
+  // Wishlist State (Clean empty session for new visitors; loaded per user when logged in)
+  const [wishlist, setWishlist] = useState(() => {
+    const savedSession = localStorage.getItem('bloom_auth_session');
+    if (savedSession) {
+      try {
+        const user = JSON.parse(savedSession);
+        const userWishlist = localStorage.getItem(`bloom_wishlist_${user.email}`);
+        if (userWishlist) return JSON.parse(userWishlist);
+      } catch (e) {}
+    }
+    return [];
+  });
 
   // Saved Shipping Address State (Starts completely empty)
   const [activeCheckoutAddress, setActiveCheckoutAddress] = useState({
@@ -56,26 +96,42 @@ export const AppProvider = ({ children }) => {
     deliveryInstructions: ''
   });
 
-  // Persistent Orders State (Only 100% Verified Paid Orders stored)
+  // Persistent Orders State (Only 100% Verified Paid Orders stored for current user)
   const [orders, setOrders] = useState(() => {
-    const saved = localStorage.getItem('bloom_orders');
-    if (saved) {
+    const savedSession = localStorage.getItem('bloom_auth_session');
+    if (savedSession) {
       try {
-        const parsed = JSON.parse(saved);
-        // Filter out legacy sample order or unverified orders
-        return parsed.filter(ord => ord.id !== 'BLM-889421' && ord.paymentId && ord.paymentId !== 'UNCONFIRMED');
-      } catch (e) {
-        // fallback
-      }
+        const user = JSON.parse(savedSession);
+        const userOrders = localStorage.getItem(`bloom_orders_${user.email}`);
+        if (userOrders) {
+          const parsed = JSON.parse(userOrders);
+          return parsed.filter(ord => ord.id !== 'BLM-889421' && ord.paymentId && ord.paymentId !== 'UNCONFIRMED');
+        }
+      } catch (e) {}
     }
     return [];
   });
 
   const [activeTrackingOrder, setActiveTrackingOrder] = useState(null);
 
+  // Sync Cart, Wishlist, and Orders per User Account
   useEffect(() => {
-    localStorage.setItem('bloom_orders', JSON.stringify(orders));
-  }, [orders]);
+    if (currentUser?.email) {
+      localStorage.setItem(`bloom_cart_${currentUser.email}`, JSON.stringify(cart));
+    }
+  }, [cart, currentUser]);
+
+  useEffect(() => {
+    if (currentUser?.email) {
+      localStorage.setItem(`bloom_wishlist_${currentUser.email}`, JSON.stringify(wishlist));
+    }
+  }, [wishlist, currentUser]);
+
+  useEffect(() => {
+    if (currentUser?.email) {
+      localStorage.setItem(`bloom_orders_${currentUser.email}`, JSON.stringify(orders));
+    }
+  }, [orders, currentUser]);
 
   const addOrder = (newOrder) => {
     // SECURITY CHECK: Strictly prohibit placing order if payment is not confirmed
@@ -83,13 +139,20 @@ export const AppProvider = ({ children }) => {
       console.error('⚠️ REJECTED ORDER PLACEMENT: Payment was not confirmed!', newOrder);
       return false;
     }
-    setOrders((prev) => [newOrder, ...prev]);
-    setActiveTrackingOrder(newOrder);
+    const orderWithUser = {
+      ...newOrder,
+      userEmail: currentUser?.email || newOrder.userEmail
+    };
+    setOrders((prev) => [orderWithUser, ...prev]);
+    setActiveTrackingOrder(orderWithUser);
     return true;
   };
 
   const clearCart = () => {
     setCart([]);
+    if (currentUser?.email) {
+      localStorage.removeItem(`bloom_cart_${currentUser.email}`);
+    }
   };
 
   // Live VIP Appointments State (starts empty as requested)
@@ -223,21 +286,6 @@ export const AppProvider = ({ children }) => {
     };
   }, [isAnyModalOpen]);
 
-  // Persistent Authentication State & User Session
-  const [currentUser, setCurrentUser] = useState(() => {
-    const saved = localStorage.getItem('bloom_auth_session');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        // fallback
-      }
-    }
-    return null;
-  });
-
-  const isAuthenticated = !!currentUser;
-
   // Registered Users Database in LocalStorage
   const [registeredUsers, setRegisteredUsers] = useState(() => {
     const saved = localStorage.getItem('bloom_registered_users');
@@ -335,15 +383,50 @@ export const AppProvider = ({ children }) => {
 
       setCurrentUser(sessionUser);
       localStorage.setItem('bloom_auth_session', JSON.stringify(sessionUser));
+
+      // Load user isolated data
+      try {
+        const userWishlist = localStorage.getItem(`bloom_wishlist_${sessionUser.email}`);
+        setWishlist(userWishlist ? JSON.parse(userWishlist) : []);
+
+        const userCart = localStorage.getItem(`bloom_cart_${sessionUser.email}`);
+        setCart(userCart ? JSON.parse(userCart) : []);
+
+        const userOrders = localStorage.getItem(`bloom_orders_${sessionUser.email}`);
+        if (userOrders) {
+          const parsed = JSON.parse(userOrders);
+          setOrders(parsed.filter(ord => ord.id !== 'BLM-889421' && ord.paymentId && ord.paymentId !== 'UNCONFIRMED'));
+        } else {
+          setOrders([]);
+        }
+      } catch (e) {}
+
       return { success: true };
     }
 
     return { success: false, message: 'Invalid email or password.' };
   };
 
-  // Logout Handler
+  // Logout Handler (Strictly clears session data & returns to clean guest mode)
   const logoutUser = () => {
     setCurrentUser(null);
+    setCart([]);
+    setWishlist([]);
+    setOrders([]);
+    setActiveCheckoutAddress({
+      fullName: '',
+      mobileNumber: '',
+      email: '',
+      houseNo: '',
+      street: '',
+      locality: '',
+      landmark: '',
+      pinCode: '',
+      city: '',
+      state: '',
+      country: 'India',
+      deliveryInstructions: ''
+    });
     localStorage.removeItem('bloom_auth_session');
   };
 
