@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { PRODUCTS } from '../data/products';
 import { assetPath } from '../utils/assetPath';
+import { fetchCloudProducts, saveCloudProducts } from '../services/cloudProductsDb';
 
 const AppContext = createContext();
 
@@ -12,7 +13,7 @@ export const currencies = {
 };
 
 export const AppProvider = ({ children }) => {
-  // Persistent Products Database with Real-Time Cross-Tab Broadcast Synchronization
+  // Persistent Products Database with Real-Time Cross-Device Sync
   const [products, setProducts] = useState(() => {
     const saved = localStorage.getItem('bloom_live_products_db');
     if (saved) {
@@ -24,18 +25,55 @@ export const AppProvider = ({ children }) => {
     return PRODUCTS;
   });
 
-  // Sync products database and broadcast across all active browser windows & tabs
-  const syncProductsToStorage = (updatedProducts, eventPayload) => {
+  // Cloud sync status shown in admin panel
+  const [cloudSyncStatus, setCloudSyncStatus] = useState('idle'); // idle | syncing | success | error
+  const pollTimerRef = useRef(null);
+
+  /** Apply a fresh product list from any source (cloud, broadcast, storage) */
+  const applyProductUpdate = (fresh) => {
+    if (!Array.isArray(fresh) || fresh.length === 0) return;
+    setProducts(fresh);
+    try { localStorage.setItem('bloom_live_products_db', JSON.stringify(fresh)); } catch (e) {}
+  };
+
+  /** Save to localStorage + BroadcastChannel (same-browser) + Cloud (cross-device) */
+  const syncProductsToStorage = async (updatedProducts, eventPayload) => {
     setProducts(updatedProducts);
     try {
       localStorage.setItem('bloom_live_products_db', JSON.stringify(updatedProducts));
+      // BroadcastChannel — instant same-browser update
       if (typeof window !== 'undefined' && window.BroadcastChannel) {
         const channel = new BroadcastChannel('bloom_product_sync_channel');
         channel.postMessage({ type: 'PRODUCTS_UPDATED', timestamp: Date.now(), ...eventPayload });
         channel.close();
       }
     } catch (e) {}
+
+    // Cloud save — publishes to all other devices
+    setCloudSyncStatus('syncing');
+    const ok = await saveCloudProducts(updatedProducts);
+    setCloudSyncStatus(ok ? 'success' : 'error');
+    if (ok) setTimeout(() => setCloudSyncStatus('idle'), 2500);
   };
+
+  // ── On mount: fetch latest products from cloud, then start 30s polling ──
+  useEffect(() => {
+    const loadFromCloud = async () => {
+      const cloud = await fetchCloudProducts();
+      if (cloud) applyProductUpdate(cloud);
+    };
+    loadFromCloud();
+
+    // Poll every 30 seconds so every device stays in sync
+    pollTimerRef.current = setInterval(async () => {
+      const cloud = await fetchCloudProducts();
+      if (cloud) applyProductUpdate(cloud);
+    }, 30000);
+
+    return () => {
+      if (pollTimerRef.current) clearInterval(pollTimerRef.current);
+    };
+  }, []);
 
   // Add New Product
   const addProduct = (newProduct) => {
@@ -55,8 +93,6 @@ export const AppProvider = ({ children }) => {
       p.id === productId ? { ...p, ...updatedFields, updatedAt: new Date().toISOString() } : p
     );
     syncProductsToStorage(updated, { action: 'UPDATE', productId });
-
-    // Instantly sync cart items matching this product ID
     setCart((prevCart) =>
       prevCart.map((item) =>
         item.id === productId
@@ -71,12 +107,10 @@ export const AppProvider = ({ children }) => {
     );
   };
 
-  // Delete Product
+  // Delete Product — immediately removed from all carts + wishlists
   const deleteProduct = (productId) => {
     const updated = products.filter((p) => p.id !== productId);
     syncProductsToStorage(updated, { action: 'DELETE', productId });
-
-    // Instantly remove deleted product from cart and wishlist across active sessions
     setCart((prevCart) => prevCart.filter((item) => item.id !== productId));
     setWishlist((prevWishlist) => prevWishlist.filter((id) => id !== productId));
   };
@@ -690,6 +724,7 @@ export const AppProvider = ({ children }) => {
         addProduct,
         updateProduct,
         deleteProduct,
+        cloudSyncStatus,
       }}
     >
       {children}

@@ -42,7 +42,8 @@ export default function AdminPortalModal() {
     orders,
     setOrders,
     appointments,
-    traffic
+    traffic,
+    cloudSyncStatus
   } = useApp();
 
   const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' | 'orders' | 'inventory' | 'appointments' | 'new-product'
@@ -354,10 +355,31 @@ export default function AdminPortalModal() {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="px-3 py-1.5 rounded-full bg-emerald-950 border border-emerald-500/40 text-emerald-400 text-xs flex items-center gap-1.5 font-mono">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-              Real-Time Sync Active
-            </span>
+            {/* Cloud Sync Status Badge */}
+            {cloudSyncStatus === 'syncing' && (
+              <span className="px-3 py-1.5 rounded-full bg-blue-950 border border-blue-500/40 text-blue-300 text-xs flex items-center gap-1.5 font-mono animate-pulse">
+                <RefreshCw className="w-3 h-3 animate-spin" />
+                Syncing to Cloud…
+              </span>
+            )}
+            {cloudSyncStatus === 'success' && (
+              <span className="px-3 py-1.5 rounded-full bg-emerald-950 border border-emerald-500/40 text-emerald-400 text-xs flex items-center gap-1.5 font-mono">
+                <CheckCircle2 className="w-3 h-3" />
+                Published to All Devices ✓
+              </span>
+            )}
+            {cloudSyncStatus === 'error' && (
+              <span className="px-3 py-1.5 rounded-full bg-red-950 border border-red-500/40 text-red-400 text-xs flex items-center gap-1.5 font-mono">
+                <AlertTriangle className="w-3 h-3" />
+                Cloud Sync Failed (Local Saved)
+              </span>
+            )}
+            {cloudSyncStatus === 'idle' && (
+              <span className="px-3 py-1.5 rounded-full bg-emerald-950 border border-emerald-500/40 text-emerald-400 text-xs flex items-center gap-1.5 font-mono">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                Live — All Devices In Sync
+              </span>
+            )}
             <button
               onClick={() => setIsAdminOpen(false)}
               className="p-2 rounded-full bg-obsidian-900 border border-gold-500/30 text-pearl-300 hover:text-gold-400 transition-colors"
