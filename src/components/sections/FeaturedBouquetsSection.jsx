@@ -206,12 +206,12 @@ export default function FeaturedBouquetsSection() {
 
                       <button
                         onClick={() => addToCart(product)}
-                        className="group/btn relative px-6 py-3 rounded-2xl bg-mutedGold-gradient text-charcoal-950 font-serif font-bold text-[10px] uppercase tracking-[0.15em] flex items-center gap-2 hover:scale-105 active:scale-95 transition-all duration-300 shadow-lg shadow-gold-500/20 overflow-hidden"
+                        className="group/btn relative px-5 py-2.5 rounded-full bg-gold-gradient text-obsidian-950 font-serif font-bold text-[11px] uppercase tracking-wider flex items-center gap-2 hover:scale-105 active:scale-95 transition-all duration-300 shadow-gold-sm overflow-hidden"
                       >
                         {/* Button shine effect */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700 pointer-events-none" />
-                        <ShoppingBag className="w-4 h-4 relative z-10" />
-                        <span className="relative z-10">Acquire</span>
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700 pointer-events-none" />
+                        <ShoppingBag className="w-4 h-4 text-obsidian-950 relative z-10" />
+                        <span className="relative z-10 font-bold">Acquire</span>
                       </button>
                     </div>
                   </div>

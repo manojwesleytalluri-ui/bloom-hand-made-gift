@@ -85,9 +85,10 @@ export default function WeddingCollectionSection() {
                   </span>
                   <button
                     onClick={() => addToCart(product, 'Bridal Deluxe Edition')}
-                    className="px-4 py-2 rounded-full bg-gold-500/20 border border-gold-500/40 text-gold-300 hover:bg-gold-500 hover:text-obsidian-950 text-xs font-serif font-bold uppercase transition-all"
+                    className="px-5 py-2.5 rounded-full bg-gold-gradient text-obsidian-950 hover:scale-105 shadow-gold-sm text-xs font-serif font-bold uppercase transition-all flex items-center gap-1.5"
                   >
-                    Acquire
+                    <ShoppingBag className="w-4 h-4 text-obsidian-950" />
+                    <span>Acquire</span>
                   </button>
                 </div>
               </div>

@@ -26,73 +26,80 @@ import CheckoutModal from './components/modals/CheckoutModal';
 import OrderTrackingModal from './components/modals/OrderTrackingModal';
 import AdminPortalModal from './components/modals/AdminPortalModal';
 import LiveChatWidget from './components/modals/LiveChatWidget';
+import UserProfileModal from './components/modals/UserProfileModal';
+
+function MainStoreLayout() {
+  return (
+    <div className="min-h-screen overflow-x-hidden w-full bg-charcoal-950 text-ivory-100 font-sans selection:bg-mutedGold-500 selection:text-charcoal-950">
+      {/* Navigation Bar */}
+      <Navbar />
+
+      {/* Unrestricted Guest Browsing - 12 Core Luxury Sections */}
+      <main>
+        {/* 1. Fullscreen Animated Hero Section with 3D Canvas */}
+        <HeroSection />
+
+        {/* 2. Featured Luxury Bouquets */}
+        <FeaturedBouquetsSection />
+
+        {/* 3. Wedding Collection */}
+        <WeddingCollectionSection />
+
+        {/* 4. Birthday Collection */}
+        <BirthdayCollectionSection />
+
+        {/* 5. Anniversary Collection */}
+        <AnniversaryCollectionSection />
+
+        {/* 6. Premium Gift Hampers */}
+        <GiftHampersSection />
+
+        {/* 7. Custom Bouquet Builder */}
+        <CustomBouquetBuilder />
+
+        {/* AI Bouquet Recommendation Section */}
+        <AiRecommendationSection />
+
+        {/* 8. Why Choose Us */}
+        <WhyChooseUsSection />
+
+        {/* 9. Customer Testimonials */}
+        <TestimonialsSection />
+
+        {/* 10. Instagram Gallery */}
+        <InstagramGallerySection />
+
+        {/* 11. FAQ Section */}
+        <FAQSection />
+      </main>
+
+      {/* 12. Luxury Footer */}
+      <FooterSection />
+
+      {/* Interactive Drawers & Modals */}
+      <CartDrawer />
+      <WishlistDrawer />
+      <SearchFilterDrawer />
+      <AuthModal />
+      <BookingModal />
+      <CheckoutModal />
+      <OrderTrackingModal />
+      <AdminPortalModal />
+      <UserProfileModal />
+
+      {/* WhatsApp & VIP Concierge Floating Live Chat */}
+      <LiveChatWidget />
+
+      {/* Custom Angel Image Cursor */}
+      <MagicalCursor />
+    </div>
+  );
+}
 
 export default function App() {
   return (
     <AppProvider>
-      <div className="min-h-screen overflow-x-hidden w-full bg-charcoal-950 text-ivory-100 font-sans selection:bg-mutedGold-500 selection:text-charcoal-950">
-        {/* Navigation Bar */}
-        <Navbar />
-
-        {/* 12 Core Luxury Sections */}
-        <main>
-          {/* 1. Fullscreen Animated Hero Section with 3D Canvas */}
-          <HeroSection />
-
-          {/* 2. Featured Luxury Bouquets (3D Cards) */}
-          <FeaturedBouquetsSection />
-
-          {/* 3. Wedding Collection */}
-          <WeddingCollectionSection />
-
-          {/* 4. Birthday Collection */}
-          <BirthdayCollectionSection />
-
-          {/* 5. Anniversary Collection */}
-          <AnniversaryCollectionSection />
-
-          {/* 6. Premium Gift Hampers */}
-          <GiftHampersSection />
-
-          {/* 7. Custom Bouquet Builder */}
-          <CustomBouquetBuilder />
-
-          {/* AI Bouquet Recommendation Section */}
-          <AiRecommendationSection />
-
-          {/* 8. Why Choose Us */}
-          <WhyChooseUsSection />
-
-          {/* 9. Customer Testimonials */}
-          <TestimonialsSection />
-
-          {/* 10. Instagram Gallery */}
-          <InstagramGallerySection />
-
-          {/* 11. FAQ Section */}
-          <FAQSection />
-        </main>
-
-        {/* 12. Luxury Footer */}
-        <FooterSection />
-
-        {/* Interactive Drawers & Modals */}
-        <CartDrawer />
-        <WishlistDrawer />
-        <SearchFilterDrawer />
-        <AuthModal />
-        <BookingModal />
-        <CheckoutModal />
-        <OrderTrackingModal />
-        <AdminPortalModal />
-
-        {/* WhatsApp & VIP Concierge Floating Live Chat */}
-        <LiveChatWidget />
-
-        {/* Custom Angel Image Cursor */}
-        <MagicalCursor />
-      </div>
+      <MainStoreLayout />
     </AppProvider>
   );
 }
-

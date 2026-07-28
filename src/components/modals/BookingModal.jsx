@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { X, Calendar, Clock, Sparkles, CheckCircle2, User, Phone, MapPin } from 'lucide-react';
+import { X, Calendar, Clock, Sparkles, CheckCircle2, User, Phone } from 'lucide-react';
 
 export default function BookingModal() {
   const { isBookingOpen, setIsBookingOpen, addAppointment } = useApp();
-  const [bookingDate, setBookingDate] = useState('2026-07-28');
+  const [clientName, setClientName] = useState('');
+  const [clientMobile, setClientMobile] = useState('');
+  const [bookingDate, setBookingDate] = useState('');
   const [bookingTime, setBookingTime] = useState('14:00 PM');
   const [consultationType, setConsultationType] = useState('In-Person Flagship Atelier');
   const [occasion, setOccasion] = useState('Royal Wedding');
@@ -17,9 +19,10 @@ export default function BookingModal() {
     
     const newAppt = {
       id: `CONF-${Math.floor(1000 + Math.random() * 9000)}`,
-      client: 'Lady Eleanor Vance',
+      client: clientName || 'Valued Client',
+      mobile: clientMobile,
       occasion: occasion,
-      date: bookingDate,
+      date: bookingDate || new Date().toISOString().split('T')[0],
       time: bookingTime,
       format: consultationType
     };
@@ -29,7 +32,7 @@ export default function BookingModal() {
     setTimeout(() => {
       setIsBooked(false);
       setIsBookingOpen(false);
-    }, 2000);
+    }, 2200);
   };
 
   return (
@@ -52,18 +55,45 @@ export default function BookingModal() {
             <CheckCircle2 className="w-10 h-10 text-gold-400 mx-auto" />
             <h4 className="font-serif font-bold text-lg text-pearl-50">Consultation Scheduled!</h4>
             <p className="text-xs text-pearl-200">
-              Confirmed for <strong>{bookingDate}</strong> at <strong>{bookingTime}</strong> ({consultationType}).
+              Confirmed for <strong>{clientName || 'Valued Client'}</strong> on <strong>{bookingDate}</strong> at <strong>{bookingTime}</strong> ({consultationType}).
             </p>
-            <p className="text-[11px] text-gold-300">Your VIP Concierge confirmation reference is #CONF-9921.</p>
+            <p className="text-[11px] text-gold-300">Your VIP Concierge confirmation reference is #CONF-{Math.floor(1000 + Math.random() * 9000)}.</p>
           </div>
         ) : (
-          <form onSubmit={handleBook} className="space-y-4">
+          <form onSubmit={handleBook} className="space-y-4 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="text-pearl-300 block mb-1">Full Name *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Enter your full name"
+                  value={clientName}
+                  onChange={(e) => setClientName(e.target.value)}
+                  className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-3 text-pearl-100 outline-none focus:border-gold-400"
+                />
+              </div>
+
+              <div>
+                <label className="text-pearl-300 block mb-1">Mobile Number *</label>
+                <input
+                  type="tel"
+                  required
+                  maxLength={10}
+                  placeholder="Enter 10-digit mobile number"
+                  value={clientMobile}
+                  onChange={(e) => setClientMobile(e.target.value)}
+                  className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-3 text-pearl-100 outline-none focus:border-gold-400"
+                />
+              </div>
+            </div>
+
             <div>
-              <label className="text-xs text-pearl-300 block mb-1">Occasion / Event Type:</label>
+              <label className="text-pearl-300 block mb-1">Occasion / Event Type:</label>
               <select
                 value={occasion}
                 onChange={(e) => setOccasion(e.target.value)}
-                className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-3 text-xs text-pearl-100 outline-none"
+                className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-3 text-pearl-100 outline-none"
               >
                 <option value="Royal Wedding">Royal Wedding & Grand Gala</option>
                 <option value="Anniversary Monument">Anniversary Monument</option>
@@ -74,21 +104,21 @@ export default function BookingModal() {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs text-pearl-300 block mb-1">Preferred Date:</label>
+                <label className="text-pearl-300 block mb-1">Preferred Date:</label>
                 <input
                   type="date"
                   required
                   value={bookingDate}
                   onChange={(e) => setBookingDate(e.target.value)}
-                  className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-2.5 text-xs text-pearl-100 outline-none"
+                  className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-2.5 text-pearl-100 outline-none"
                 />
               </div>
               <div>
-                <label className="text-xs text-pearl-300 block mb-1">Time Slot:</label>
+                <label className="text-pearl-300 block mb-1">Time Slot:</label>
                 <select
                   value={bookingTime}
                   onChange={(e) => setBookingTime(e.target.value)}
-                  className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-2.5 text-xs text-pearl-100 outline-none"
+                  className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-2.5 text-pearl-100 outline-none"
                 >
                   <option value="10:00 AM">10:00 AM (Morning Slot)</option>
                   <option value="14:00 PM">14:00 PM (Afternoon Slot)</option>
@@ -99,14 +129,14 @@ export default function BookingModal() {
             </div>
 
             <div>
-              <label className="text-xs text-pearl-300 block mb-1">Consultation Location / Format:</label>
+              <label className="text-pearl-300 block mb-1">Consultation Location / Format:</label>
               <div className="grid grid-cols-2 gap-2">
                 {['In-Person Flagship Atelier', 'Private Video Call'].map((fmt) => (
                   <button
                     key={fmt}
                     type="button"
                     onClick={() => setConsultationType(fmt)}
-                    className={`p-3 rounded-xl border text-xs text-center font-medium ${
+                    className={`p-3 rounded-xl border text-center font-medium ${
                       consultationType === fmt ? 'bg-gold-500/20 border-gold-400 text-gold-300 font-bold' : 'bg-obsidian-900 border-gold-500/20 text-pearl-300'
                     }`}
                   >
@@ -118,9 +148,9 @@ export default function BookingModal() {
 
             <button
               type="submit"
-              className="w-full py-4 rounded-full bg-gold-gradient text-obsidian-950 font-serif font-bold text-xs uppercase tracking-widest shadow-gold-sm hover:scale-[1.02] transition-transform"
+              className="w-full py-3.5 rounded-full bg-gold-gradient text-obsidian-950 font-serif font-bold text-xs uppercase tracking-widest shadow-gold-sm hover:scale-[1.02] transition-transform"
             >
-              Confirm VIP Appointment Booking
+              Confirm VIP Consultation
             </button>
           </form>
         )}

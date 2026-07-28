@@ -40,10 +40,56 @@ export const AppProvider = ({ children }) => {
 
   const [wishlist, setWishlist] = useState(['bouq-2', 'bouq-4']);
 
-  // Live Orders State (starts empty as requested)
-  const [orders, setOrders] = useState([]);
+  // Saved Shipping Address State (Starts completely empty)
+  const [activeCheckoutAddress, setActiveCheckoutAddress] = useState({
+    fullName: '',
+    mobileNumber: '',
+    email: '',
+    houseNo: '',
+    street: '',
+    locality: '',
+    landmark: '',
+    pinCode: '',
+    city: '',
+    state: '',
+    country: 'India',
+    deliveryInstructions: ''
+  });
+
+  // Persistent Orders State (Only 100% Verified Paid Orders stored)
+  const [orders, setOrders] = useState(() => {
+    const saved = localStorage.getItem('bloom_orders');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        // Filter out legacy sample order or unverified orders
+        return parsed.filter(ord => ord.id !== 'BLM-889421' && ord.paymentId && ord.paymentId !== 'UNCONFIRMED');
+      } catch (e) {
+        // fallback
+      }
+    }
+    return [];
+  });
+
+  const [activeTrackingOrder, setActiveTrackingOrder] = useState(null);
+
+  useEffect(() => {
+    localStorage.setItem('bloom_orders', JSON.stringify(orders));
+  }, [orders]);
+
   const addOrder = (newOrder) => {
+    // SECURITY CHECK: Strictly prohibit placing order if payment is not confirmed
+    if (!newOrder || !newOrder.paymentId || newOrder.paymentId === 'UNCONFIRMED' || !newOrder.status?.includes('Confirmed')) {
+      console.error('⚠️ REJECTED ORDER PLACEMENT: Payment was not confirmed!', newOrder);
+      return false;
+    }
     setOrders((prev) => [newOrder, ...prev]);
+    setActiveTrackingOrder(newOrder);
+    return true;
+  };
+
+  const clearCart = () => {
+    setCart([]);
   };
 
   // Live VIP Appointments State (starts empty as requested)
@@ -93,10 +139,31 @@ export const AppProvider = ({ children }) => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isTrackingOpen, setIsTrackingOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [quickViewProduct, setQuickViewProduct] = useState(null);
+
+  // Pending Protected Action State (for resuming action post login)
+  const [pendingAction, setPendingAction] = useState(null);
+
+  // Execute pending action after login/registration
+  const executePendingAction = () => {
+    if (!pendingAction) return;
+    const action = pendingAction;
+    setPendingAction(null);
+
+    if (action.type === 'ADD_TO_CART' && action.product) {
+      addToCart(action.product, action.variant || 'Signature Luxury Edition');
+    } else if (action.type === 'OPEN_CHECKOUT') {
+      setIsCheckoutOpen(true);
+    } else if (action.type === 'TRACK_ORDER') {
+      setIsTrackingOpen(true);
+    } else if (action.type === 'OPEN_BOOKING') {
+      setIsBookingOpen(true);
+    }
+  };
 
   // Back button modal history management
   const isAnyModalOpen =
@@ -107,6 +174,7 @@ export const AppProvider = ({ children }) => {
     isSearchOpen ||
     isCheckoutOpen ||
     isTrackingOpen ||
+    isProfileOpen ||
     isAiModalOpen ||
     isChatOpen ||
     isAdminOpen ||
@@ -140,6 +208,7 @@ export const AppProvider = ({ children }) => {
         setIsSearchOpen(false);
         setIsCheckoutOpen(false);
         setIsTrackingOpen(false);
+        setIsProfileOpen(false);
         setIsAiModalOpen(false);
         setIsChatOpen(false);
         setIsAdminOpen(false);
@@ -154,12 +223,136 @@ export const AppProvider = ({ children }) => {
     };
   }, [isAnyModalOpen]);
 
-  // User State
-  const [user, setUser] = useState({
-    name: 'Lady Eleanor Vance',
-    email: 'eleanor.vance@royal-luxury.com',
-    tier: 'VIP Sovereign Member',
+  // Persistent Authentication State & User Session
+  const [currentUser, setCurrentUser] = useState(() => {
+    const saved = localStorage.getItem('bloom_auth_session');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        // fallback
+      }
+    }
+    return null;
   });
+
+  const isAuthenticated = !!currentUser;
+
+  // Registered Users Database in LocalStorage
+  const [registeredUsers, setRegisteredUsers] = useState(() => {
+    const saved = localStorage.getItem('bloom_registered_users');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        // fallback
+      }
+    }
+    return [
+      {
+        id: 'usr_demo_1',
+        fullName: 'Manoj Kumar',
+        email: 'manoj@bloom.com',
+        mobileNumber: '9876543210',
+        passwordHash: 'bWVtYmVyMTIz', // Base64 hash of 'member123'
+        tier: 'VIP Sovereign Member',
+        currentLoginDate: new Date().toISOString(),
+        lastLoginDate: new Date(Date.now() - 86400000).toISOString()
+      }
+    ];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('bloom_registered_users', JSON.stringify(registeredUsers));
+  }, [registeredUsers]);
+
+  // Register User Handler
+  const registerUser = ({ fullName, mobileNumber, email, password }) => {
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanMobile = mobileNumber.trim();
+
+    const existing = registeredUsers.find(
+      (u) => u.email.toLowerCase() === cleanEmail || u.mobileNumber === cleanMobile
+    );
+
+    if (existing) {
+      return {
+        success: false,
+        message: 'An account with this email address or mobile number already exists.'
+      };
+    }
+
+    const now = new Date().toISOString();
+    const newUser = {
+      id: `usr_${Date.now()}`,
+      fullName,
+      email: cleanEmail,
+      mobileNumber: cleanMobile,
+      passwordHash: btoa(password),
+      tier: 'VIP Sovereign Member',
+      createdAt: now,
+      currentLoginDate: now,
+      lastLoginDate: null
+    };
+
+    setRegisteredUsers((prev) => [...prev, newUser]);
+    return { success: true };
+  };
+
+  // Login User Handler
+  const loginUser = (emailOrMobile, password) => {
+    const cleanInput = emailOrMobile.trim().toLowerCase();
+    const hash = btoa(password);
+
+    const userMatch = registeredUsers.find(
+      (u) =>
+        (u.email.toLowerCase() === cleanInput || u.mobileNumber === cleanInput) &&
+        u.passwordHash === hash
+    );
+
+    if (userMatch) {
+      const now = new Date().toISOString();
+      const lastLogin = userMatch.currentLoginDate || new Date(Date.now() - 86400000).toISOString();
+
+      const sessionUser = {
+        id: userMatch.id,
+        fullName: userMatch.fullName,
+        email: userMatch.email,
+        mobileNumber: userMatch.mobileNumber,
+        tier: userMatch.tier || 'VIP Sovereign Member',
+        currentLoginDate: now,
+        lastLoginDate: lastLogin
+      };
+
+      // Update user login timestamp in registered database
+      setRegisteredUsers((prev) =>
+        prev.map((u) =>
+          u.id === userMatch.id
+            ? { ...u, lastLoginDate: u.currentLoginDate || lastLogin, currentLoginDate: now }
+            : u
+        )
+      );
+
+      setCurrentUser(sessionUser);
+      localStorage.setItem('bloom_auth_session', JSON.stringify(sessionUser));
+      return { success: true };
+    }
+
+    return { success: false, message: 'Invalid email or password.' };
+  };
+
+  // Logout Handler
+  const logoutUser = () => {
+    setCurrentUser(null);
+    localStorage.removeItem('bloom_auth_session');
+  };
+
+  // User State (backed by auth session)
+  const user = currentUser || {
+    fullName: 'Guest Visitor',
+    email: '',
+    tier: 'Guest'
+  };
 
   // Filter & Search
   const [searchQuery, setSearchQuery] = useState('');
@@ -239,9 +432,14 @@ export const AppProvider = ({ children }) => {
         addToCart,
         removeFromCart,
         updateQuantity,
+        clearCart,
         cartTotalUSD,
         wishlist,
         toggleWishlist,
+        activeCheckoutAddress,
+        setActiveCheckoutAddress,
+        activeTrackingOrder,
+        setActiveTrackingOrder,
         isCartOpen,
         setIsCartOpen,
         isWishlistOpen,
@@ -258,6 +456,11 @@ export const AppProvider = ({ children }) => {
         setIsCheckoutOpen,
         isTrackingOpen,
         setIsTrackingOpen,
+        isProfileOpen,
+        setIsProfileOpen,
+        pendingAction,
+        setPendingAction,
+        executePendingAction,
         isAiModalOpen,
         setIsAiModalOpen,
         isChatOpen,
@@ -267,7 +470,12 @@ export const AppProvider = ({ children }) => {
         quickViewProduct,
         setQuickViewProduct,
         user,
-        setUser,
+        setUser: setCurrentUser,
+        currentUser,
+        isAuthenticated,
+        loginUser,
+        registerUser,
+        logoutUser,
         orders,
         setOrders,
         addOrder,

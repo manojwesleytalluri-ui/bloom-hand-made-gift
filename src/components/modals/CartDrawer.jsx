@@ -11,7 +11,11 @@ export default function CartDrawer() {
     updateQuantity,
     cartTotalUSD,
     formatPrice,
-    setIsCheckoutOpen
+    setIsCheckoutOpen,
+    isAuthenticated,
+    setPendingAction,
+    setAuthMode,
+    setIsAuthOpen
   } = useApp();
 
   if (!isCartOpen) return null;
@@ -113,7 +117,13 @@ export default function CartDrawer() {
               <button
                 onClick={() => {
                   setIsCartOpen(false);
-                  setIsCheckoutOpen(true);
+                  if (isAuthenticated) {
+                    setIsCheckoutOpen(true);
+                  } else {
+                    setPendingAction({ type: 'OPEN_CHECKOUT' });
+                    setAuthMode('login');
+                    setIsAuthOpen(true);
+                  }
                 }}
                 className="w-full py-4 rounded-full bg-gold-gradient text-obsidian-950 font-serif font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 shadow-gold-sm hover:scale-[1.02] transition-transform"
               >
