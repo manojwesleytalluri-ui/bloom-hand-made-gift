@@ -1,9 +1,6 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Float, Sparkles } from '@react-three/drei';
-import * as THREE from 'three';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, ShoppingBag, Sparkles as SparklesIcon, Volume2, VolumeX } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ShoppingBag, Sparkles as SparklesIcon } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { assetPath } from '../../utils/assetPath';
 
@@ -64,84 +61,25 @@ const CAROUSEL_ITEMS = [
     tagline: 'Premium Ivory Roses with Hand-Tied Satin Ribbon Cascade & Gold Accents',
     priceUSD: 580,
     image: assetPath('/assets/images/royal_wedding_bouquet_1785002559950.png'),
-  }
+  },
 ];
 
-// Floating petal component
-function FloatingPetal({ color, position, speedMultiplier = 1 }) {
-  const meshRef = useRef();
-  const [initialRot] = useState(() => [
-    Math.random() * Math.PI,
-    Math.random() * Math.PI,
-    Math.random() * Math.PI
-  ]);
-  const [wobbleSpeed] = useState(() => 0.5 + Math.random() * 0.5);
-
-  useFrame((state) => {
-    if (meshRef.current) {
-      const time = state.clock.getElapsedTime();
-      meshRef.current.rotation.x = initialRot[0] + time * 0.1 * speedMultiplier;
-      meshRef.current.rotation.y = initialRot[1] + time * 0.15 * speedMultiplier;
-      meshRef.current.position.y = position[1] + Math.sin(time * wobbleSpeed) * 0.15;
-    }
-  });
-
-  return (
-    <mesh ref={meshRef} position={position} scale={[0.15, 0.25, 0.03]}>
-      <sphereGeometry args={[1, 16, 16]} />
-      <meshStandardMaterial color={color} roughness={0.8} metalness={0.05} side={THREE.DoubleSide} />
-    </mesh>
-  );
-}
-
-// Gold particle stage — always gold tones (no preset switching)
-function GoldParticleStage() {
-  const groupRef = useRef();
-  const goldColors = ['#d4af37', '#f3e5ab', '#b8860b'];
-  const petalPositions = [
-    { pos: [-1.5, 1, -1], col: goldColors[0] },
-    { pos: [1.8, 0.5, -2], col: goldColors[1] },
-    { pos: [-1.2, -1, 1], col: goldColors[2] },
-    { pos: [1.4, -1.2, -0.5], col: goldColors[0] },
-    { pos: [0, 1.6, -1.5], col: goldColors[1] },
-  ];
-
-  useFrame((state) => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y = state.clock.getElapsedTime() * 0.05;
-    }
-  });
-
-  return (
-    <group ref={groupRef}>
-      <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
-        {petalPositions.map((p, i) => (
-          <FloatingPetal key={i} color={p.col} position={p.pos} speedMultiplier={1 + i * 0.2} />
-        ))}
-      </Float>
-      <Sparkles count={120} scale={6} size={3} speed={0.3} color="#d4af37" opacity={0.6} />
-      <Sparkles count={60} scale={4} size={2} speed={0.5} color="#ffffff" opacity={0.5} />
-    </group>
-  );
-}
+const slideVariants = {
+  enter: (dir) => ({ x: dir > 0 ? 220 : -220, opacity: 0, scale: 0.94 }),
+  center: {
+    x: 0, opacity: 1, scale: 1,
+    transition: { x: { type: 'spring', stiffness: 300, damping: 28 }, opacity: { duration: 0.22 } }
+  },
+  exit: (dir) => ({
+    x: dir < 0 ? 220 : -220, opacity: 0, scale: 0.94,
+    transition: { x: { type: 'spring', stiffness: 300, damping: 28 }, opacity: { duration: 0.22 } }
+  }),
+};
 
 export default function FlowerHeroCanvas() {
-  const [hasWebGL, setHasWebGL] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
   const [direction, setDirection] = useState(0);
-  const [isPlayingSound, setIsPlayingSound] = useState(false);
-  const toggleSound = () => setIsPlayingSound(!isPlayingSound);
   const { formatPrice, addToCart } = useApp();
-
-  useEffect(() => {
-    try {
-      const canvas = document.createElement('canvas');
-      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-      if (!gl) setHasWebGL(false);
-    } catch (e) {
-      setHasWebGL(false);
-    }
-  }, []);
 
   const handleNext = () => {
     setDirection(1);
@@ -160,79 +98,23 @@ export default function FlowerHeroCanvas() {
 
   const currentItem = CAROUSEL_ITEMS[activeIndex];
 
-  const slideVariants = {
-    enter: (dir) => ({
-      x: dir > 0 ? 200 : -200,
-      opacity: 0,
-      scale: 0.95,
-    }),
-    center: {
-      x: 0,
-      opacity: 1,
-      scale: 1,
-      transition: {
-        x: { type: 'spring', stiffness: 300, damping: 28 },
-        opacity: { duration: 0.25 },
-        scale: { duration: 0.25 }
-      }
-    },
-    exit: (dir) => ({
-      x: dir < 0 ? 200 : -200,
-      opacity: 0,
-      scale: 0.95,
-      transition: {
-        x: { type: 'spring', stiffness: 300, damping: 28 },
-        opacity: { duration: 0.25 },
-        scale: { duration: 0.25 }
-      }
-    })
-  };
-
   return (
-    <div className="w-full h-[340px] sm:h-[500px] lg:h-[680px] relative rounded-3xl overflow-hidden bg-charcoal-950/40 backdrop-blur-md border border-mutedGold-500/20 shadow-2xl group flex flex-col justify-between p-6 sm:p-8 select-none">
+    <div className="w-full h-[340px] sm:h-[500px] lg:h-[680px] relative rounded-3xl overflow-hidden border border-mutedGold-500/20 shadow-2xl flex flex-col justify-between p-6 sm:p-8 select-none"
+      style={{ background: 'radial-gradient(ellipse at 60% 30%, rgba(212,175,55,0.10) 0%, rgba(10,10,15,0.97) 70%)' }}
+    >
+      {/* Subtle animated glow orb — pure CSS, no 3D lib */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 rounded-full bg-gold-500/10 blur-3xl animate-pulse" />
+        <div className="absolute bottom-10 right-10 w-40 h-40 rounded-full bg-gold-400/5 blur-2xl" />
+      </div>
 
-      {/* WebGL Gold Particle Background */}
-      {hasWebGL && (
-        <div className="absolute inset-0 z-0">
-          <Canvas
-            camera={{ position: [0, 0, 4.5], fov: 45 }}
-            gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
-          >
-            <ambientLight intensity={1.5} />
-            <directionalLight position={[5, 5, 5]} intensity={2} color="#fff8e7" />
-            <pointLight position={[-5, 4, -5]} intensity={1.5} color="#d4af37" />
-            <spotLight position={[0, 8, 0]} intensity={1.8} color="#d4af37" angle={0.8} penumbra={1} />
-            <GoldParticleStage />
-            <OrbitControls
-              enableZoom={false}
-              enablePan={false}
-              maxPolarAngle={Math.PI / 2 + 0.1}
-              minPolarAngle={Math.PI / 3}
-              rotateSpeed={0.4}
-            />
-          </Canvas>
-        </div>
-      )}
-
-      {/* Header Row: Interactive Art Stage title + Slide counter + Sound */}
+      {/* Header Row */}
       <div className="relative z-10 w-full flex items-center justify-between text-[10px] uppercase font-bold tracking-widest text-mutedGold-400">
         <div className="flex items-center gap-1.5">
           <SparklesIcon className="w-3.5 h-3.5 text-mutedGold-400 animate-pulse" />
-          <span>Interactive Art Stage</span>
+          <span>Luxury Bouquet Gallery</span>
         </div>
-        <div className="flex items-center gap-3">
-          <span>Slide {activeIndex + 1} of {CAROUSEL_ITEMS.length}</span>
-          <button
-            onClick={toggleSound}
-            className="p-2 sm:p-2.5 rounded-full bg-obsidian-950/90 backdrop-blur-md border border-gold-500/30 text-gold-400 hover:text-pearl-100 transition-colors"
-            title="Toggle Luxury Ambient Sound"
-          >
-            {isPlayingSound
-              ? <Volume2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gold-400 animate-pulse" />
-              : <VolumeX className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-pearl-400" />
-            }
-          </button>
-        </div>
+        <span>Slide {activeIndex + 1} of {CAROUSEL_ITEMS.length}</span>
       </div>
 
       {/* Main Image Slider */}
@@ -258,25 +140,26 @@ export default function FlowerHeroCanvas() {
               <img
                 src={currentItem.image}
                 alt={currentItem.name}
-                className="w-full h-full object-contain filter drop-shadow-[0_20px_50px_rgba(212,175,55,0.3)] animate-float select-none"
+                className="w-full h-full object-contain drop-shadow-[0_20px_50px_rgba(212,175,55,0.35)] select-none"
                 draggable="false"
+                onError={(e) => { e.target.src = assetPath('/assets/images/sovereign_red_roses_1785005575575.png'); }}
               />
             </motion.div>
           </AnimatePresence>
         </div>
       </div>
 
-      {/* Left/Right Arrow Navigation */}
+      {/* Left / Right Arrow Navigation */}
       <button
         onClick={handlePrev}
-        className="absolute left-4 top-[48%] -translate-y-1/2 z-20 pointer-events-auto w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full border border-mutedGold-500/20 bg-charcoal-950/40 backdrop-blur-md text-mutedGold-400 hover:text-pearl-50 hover:bg-mutedGold-500/10 hover:scale-110 active:scale-95 transition-all shadow-md"
+        className="absolute left-3 sm:left-4 top-[48%] -translate-y-1/2 z-20 w-9 h-9 sm:w-11 sm:h-11 flex items-center justify-center rounded-full border border-mutedGold-500/25 bg-obsidian-950/60 backdrop-blur-md text-mutedGold-400 hover:text-pearl-50 hover:bg-mutedGold-500/15 hover:scale-110 active:scale-95 transition-all shadow-md"
         aria-label="Previous Slide"
       >
         <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
       </button>
       <button
         onClick={handleNext}
-        className="absolute right-4 top-[48%] -translate-y-1/2 z-20 pointer-events-auto w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full border border-mutedGold-500/20 bg-charcoal-950/40 backdrop-blur-md text-mutedGold-400 hover:text-pearl-50 hover:bg-mutedGold-500/10 hover:scale-110 active:scale-95 transition-all shadow-md"
+        className="absolute right-3 sm:right-4 top-[48%] -translate-y-1/2 z-20 w-9 h-9 sm:w-11 sm:h-11 flex items-center justify-center rounded-full border border-mutedGold-500/25 bg-obsidian-950/60 backdrop-blur-md text-mutedGold-400 hover:text-pearl-50 hover:bg-mutedGold-500/15 hover:scale-110 active:scale-95 transition-all shadow-md"
         aria-label="Next Slide"
       >
         <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -298,14 +181,14 @@ export default function FlowerHeroCanvas() {
         ))}
       </div>
 
-      {/* Bottom Product Details & Order Banner */}
-      <div className="relative z-10 w-full bg-charcoal-950/70 border border-mutedGold-500/20 backdrop-blur-md p-4 sm:p-5 rounded-2xl flex flex-col items-center text-center shadow-lg gap-2 pointer-events-auto">
+      {/* Bottom Product Details & Order Button */}
+      <div className="relative z-10 w-full bg-obsidian-950/75 border border-mutedGold-500/20 backdrop-blur-md p-4 sm:p-5 rounded-2xl flex flex-col items-center text-center shadow-lg gap-2 pointer-events-auto">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeIndex}
-            initial={{ opacity: 0, y: 5 }}
+            initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -5 }}
+            exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.2 }}
             className="flex flex-col items-center"
           >
