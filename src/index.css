@@ -364,3 +364,35 @@ html.light .text-\[\#d9d8d6\],
 html.light-mode .text-\[\#d9d8d6\] {
   color: #26272e !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE PHONE SCROLLING & HARDWARE ACCELERATION OPTIMIZATION
+   ═══════════════════════════════════════════════════════════════ */
+html, body {
+  -webkit-overflow-scrolling: touch;
+  touch-action: manipulation;
+}
+
+@media (max-width: 640px) {
+  /* Lighten heavy GPU backdrop blurs on mobile phones to prevent freezing */
+  .glass-panel,
+  .backdrop-blur-xl,
+  .backdrop-blur-2xl,
+  .backdrop-blur-3xl,
+  .backdrop-blur-md,
+  header div {
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+  }
+
+  /* Disable heavy infinite ping animations on mobile screens */
+  .animate-ping {
+    animation: none !important;
+  }
+
+  /* Optimize heavy background glow divs on mobile phones */
+  div[class*="blur-[120px]"],
+  div[class*="blur-[100px]"] {
+    display: none !important;
+  }
+}
