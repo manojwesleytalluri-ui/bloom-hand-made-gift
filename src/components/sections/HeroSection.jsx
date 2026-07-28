@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useApp } from '../../context/AppContext';
 import FlowerHeroCanvas from '../3d/FlowerHeroCanvas';
 import { Sparkles, Calendar, ArrowRight, ShieldCheck, Award, Truck, Compass } from 'lucide-react';
 
 export default function HeroSection() {
   const { setIsBookingOpen, setIsAiModalOpen } = useApp();
-  const [lightingPreset, setLightingPreset] = useState('gold');
 
   return (
     <section id="home" className="relative min-h-screen pt-32 lg:pt-36 pb-16 flex items-center justify-center overflow-hidden">
@@ -83,10 +82,9 @@ export default function HeroSection() {
             </div>
           </div>
 
-          {/* Right 3D Interactive Canvas & Lighting Controls */}
+          {/* Right Interactive Art Stage Canvas */}
           <div className="lg:col-span-6 relative">
-            {/* 3D Canvas */}
-            <FlowerHeroCanvas preset={lightingPreset} setPreset={setLightingPreset} />
+            <FlowerHeroCanvas />
           </div>
 
         </div>

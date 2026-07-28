@@ -7,15 +7,14 @@ import { ChevronLeft, ChevronRight, ShoppingBag, Sparkles as SparklesIcon, Volum
 import { useApp } from '../../context/AppContext';
 import { assetPath } from '../../utils/assetPath';
 
-// Carousel Items data matching public/assets/images
+// Carousel Items
 const CAROUSEL_ITEMS = [
   {
-    id: 'bouq-7', // unique id for active image shown in user screenshot
+    id: 'bouq-7',
     name: 'Royal Eclipse Ecuadorian Gold Roses',
     tagline: 'Signature Bestseller Ecuadorian Blooms in Velvet wrap with Gold Accents',
     priceUSD: 450,
     image: assetPath('/assets/images/luxury_rose_bouquet_1785002544191.png'),
-    preset: 'gold',
   },
   {
     id: 'bouq-1',
@@ -23,7 +22,6 @@ const CAROUSEL_ITEMS = [
     tagline: '100 Ecuadorian Grand Roses in Signature Black Velvet Box & 24K Gold Trim',
     priceUSD: 450,
     image: assetPath('/assets/images/sovereign_red_roses_1785005575575.png'),
-    preset: 'crimson',
   },
   {
     id: 'bouq-4',
@@ -31,15 +29,13 @@ const CAROUSEL_ITEMS = [
     tagline: 'Vintage Dom Pérignon Champagne, Belgian Gold Truffles & Black Orchids',
     priceUSD: 1200,
     image: assetPath('/assets/images/luxury_gift_hamper_1785003431109.png'),
-    preset: 'emerald',
   },
   {
     id: 'bouq-3',
-    name: 'L’Éternel Preserved Crimson Rose Cloche',
+    name: "L\u2019\u00c9ternel Preserved Crimson Rose Cloche",
     tagline: 'Real Ecuadorian Rose Preserved for 5+ Years under Crystal Glass Cloche',
     priceUSD: 320,
     image: assetPath('/assets/images/eternal_rose_cloche_1785003145770.png'),
-    preset: 'crimson',
   },
   {
     id: 'bouq-2',
@@ -47,7 +43,6 @@ const CAROUSEL_ITEMS = [
     tagline: 'Rare White Orchids, Plush French Peonies & Gold Leafed Eucalyptus Stems',
     priceUSD: 680,
     image: assetPath('/assets/images/royal_bridal_orchids_1785005589455.png'),
-    preset: 'emerald',
   },
   {
     id: 'bouq-5',
@@ -55,7 +50,6 @@ const CAROUSEL_ITEMS = [
     tagline: '50 Rare Golden Dutch Tulips with Hand-Tied Italian Gold Silk Ribbon',
     priceUSD: 390,
     image: assetPath('/assets/images/monaco_golden_tulips.png'),
-    preset: 'gold',
   },
   {
     id: 'bouq-6',
@@ -63,19 +57,17 @@ const CAROUSEL_ITEMS = [
     tagline: 'Architectural Floral Sculpture for Presidential Suites & Luxury Estates',
     priceUSD: 850,
     image: assetPath('/assets/images/versailles_white_hydrangeas.png'),
-    preset: 'gold',
   },
   {
-    id: 'bouq-8', // unique id for remaining wedding bouquet asset
+    id: 'bouq-8',
     name: 'Royal Romance Bridal Rose Bouquet',
     tagline: 'Premium Ivory Roses with Hand-Tied Satin Ribbon Cascade & Gold Accents',
     priceUSD: 580,
     image: assetPath('/assets/images/royal_wedding_bouquet_1785002559950.png'),
-    preset: 'gold',
   }
 ];
 
-// A realistic, soft organic floating petal component
+// Floating petal component
 function FloatingPetal({ color, position, speedMultiplier = 1 }) {
   const meshRef = useRef();
   const [initialRot] = useState(() => [
@@ -97,31 +89,22 @@ function FloatingPetal({ color, position, speedMultiplier = 1 }) {
   return (
     <mesh ref={meshRef} position={position} scale={[0.15, 0.25, 0.03]}>
       <sphereGeometry args={[1, 16, 16]} />
-      <meshStandardMaterial
-        color={color}
-        roughness={0.8}
-        metalness={0.05}
-        side={THREE.DoubleSide}
-      />
+      <meshStandardMaterial color={color} roughness={0.8} metalness={0.05} side={THREE.DoubleSide} />
     </mesh>
   );
 }
 
-// Particle stage with floating elements
-function Scene3DArrangement({ preset = 'gold' }) {
+// Gold particle stage — always gold tones (no preset switching)
+function GoldParticleStage() {
   const groupRef = useRef();
-
-  const colors = {
-    gold: ['#d4af37', '#f3e5ab', '#b8860b'],
-    emerald: ['#1c8266', '#d4af37', '#062c22'],
-    crimson: ['#991b1b', '#e11d48', '#f43f5e'],
-  }[preset] || ['#d4af37', '#f3e5ab', '#b8860b'];
-
-  const sparkColor = {
-    gold: '#d4af37',
-    emerald: '#34d399',
-    crimson: '#f43f5e',
-  }[preset] || '#d4af37';
+  const goldColors = ['#d4af37', '#f3e5ab', '#b8860b'];
+  const petalPositions = [
+    { pos: [-1.5, 1, -1], col: goldColors[0] },
+    { pos: [1.8, 0.5, -2], col: goldColors[1] },
+    { pos: [-1.2, -1, 1], col: goldColors[2] },
+    { pos: [1.4, -1.2, -0.5], col: goldColors[0] },
+    { pos: [0, 1.6, -1.5], col: goldColors[1] },
+  ];
 
   useFrame((state) => {
     if (groupRef.current) {
@@ -129,35 +112,23 @@ function Scene3DArrangement({ preset = 'gold' }) {
     }
   });
 
-  // Floating petals coordinates
-  const petalPositions = [
-    { pos: [-1.5, 1, -1], col: colors[0] },
-    { pos: [1.8, 0.5, -2], col: colors[1] },
-    { pos: [-1.2, -1, 1], col: colors[2] },
-    { pos: [1.4, -1.2, -0.5], col: colors[0] },
-    { pos: [0, 1.6, -1.5], col: colors[1] },
-  ];
-
   return (
     <group ref={groupRef}>
-      {/* Floating Petals */}
       <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
         {petalPositions.map((p, i) => (
           <FloatingPetal key={i} color={p.col} position={p.pos} speedMultiplier={1 + i * 0.2} />
         ))}
       </Float>
-
-      {/* Floating Golden Dust Particles */}
-      <Sparkles count={120} scale={6} size={3} speed={0.3} color={sparkColor} opacity={0.6} />
+      <Sparkles count={120} scale={6} size={3} speed={0.3} color="#d4af37" opacity={0.6} />
       <Sparkles count={60} scale={4} size={2} speed={0.5} color="#ffffff" opacity={0.5} />
     </group>
   );
 }
 
-export default function FlowerHeroCanvas({ preset = 'gold', setPreset }) {
+export default function FlowerHeroCanvas() {
   const [hasWebGL, setHasWebGL] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [direction, setDirection] = useState(0); // -1: left, 1: right
+  const [direction, setDirection] = useState(0);
   const [isPlayingSound, setIsPlayingSound] = useState(false);
   const toggleSound = () => setIsPlayingSound(!isPlayingSound);
   const { formatPrice, addToCart } = useApp();
@@ -172,53 +143,22 @@ export default function FlowerHeroCanvas({ preset = 'gold', setPreset }) {
     }
   }, []);
 
-  // Sync internal activeIndex when parent's preset changes from outside button triggers
-  useEffect(() => {
-    // Find first item matching parent's preset
-    const matchingIndex = CAROUSEL_ITEMS.findIndex(item => item.preset === preset);
-    if (matchingIndex !== -1 && matchingIndex !== activeIndex) {
-      // Determine movement direction for visual transition
-      setDirection(matchingIndex > activeIndex ? 1 : -1);
-      setActiveIndex(matchingIndex);
-    }
-  }, [preset]);
-
   const handleNext = () => {
     setDirection(1);
-    const nextIndex = (activeIndex + 1) % CAROUSEL_ITEMS.length;
-    setActiveIndex(nextIndex);
-    // Sync back to parent preset state
-    if (setPreset) {
-      setPreset(CAROUSEL_ITEMS[nextIndex].preset);
-    }
+    setActiveIndex((prev) => (prev + 1) % CAROUSEL_ITEMS.length);
   };
 
   const handlePrev = () => {
     setDirection(-1);
-    const prevIndex = (activeIndex - 1 + CAROUSEL_ITEMS.length) % CAROUSEL_ITEMS.length;
-    setActiveIndex(prevIndex);
-    // Sync back to parent preset state
-    if (setPreset) {
-      setPreset(CAROUSEL_ITEMS[prevIndex].preset);
-    }
+    setActiveIndex((prev) => (prev - 1 + CAROUSEL_ITEMS.length) % CAROUSEL_ITEMS.length);
   };
 
   const handleDotClick = (index) => {
     setDirection(index > activeIndex ? 1 : -1);
     setActiveIndex(index);
-    if (setPreset) {
-      setPreset(CAROUSEL_ITEMS[index].preset);
-    }
   };
 
   const currentItem = CAROUSEL_ITEMS[activeIndex];
-
-  // Colors for drop-shadow glow based on active item preset
-  const glowShadowStyle = {
-    gold: 'drop-shadow-[0_20px_50px_rgba(212,175,55,0.3)]',
-    emerald: 'drop-shadow-[0_20px_50px_rgba(16,185,129,0.25)]',
-    crimson: 'drop-shadow-[0_20px_50px_rgba(239,68,68,0.3)]',
-  }[currentItem.preset] || 'drop-shadow-[0_20px_50px_rgba(212,175,55,0.3)]';
 
   const slideVariants = {
     enter: (dir) => ({
@@ -251,16 +191,7 @@ export default function FlowerHeroCanvas({ preset = 'gold', setPreset }) {
   return (
     <div className="w-full h-[340px] sm:h-[500px] lg:h-[680px] relative rounded-3xl overflow-hidden bg-charcoal-950/40 backdrop-blur-md border border-mutedGold-500/20 shadow-2xl group flex flex-col justify-between p-6 sm:p-8 select-none">
 
-      {/* Audio Ambience Toggle */}
-      <button
-        onClick={toggleSound}
-        className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20 p-2 sm:p-2.5 rounded-full bg-obsidian-950/90 backdrop-blur-md border border-gold-500/30 text-gold-400 hover:text-pearl-100 transition-colors"
-        title="Toggle Luxury Ambient Sound"
-      >
-        {isPlayingSound ? <Volume2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gold-400 animate-pulse" /> : <VolumeX className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-pearl-400" />}
-      </button>
-
-      {/* 3D WebGL Canvas Layer (Background environment) */}
+      {/* WebGL Gold Particle Background */}
       {hasWebGL && (
         <div className="absolute inset-0 z-0">
           <Canvas
@@ -268,16 +199,10 @@ export default function FlowerHeroCanvas({ preset = 'gold', setPreset }) {
             gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
           >
             <ambientLight intensity={1.5} />
-            <directionalLight 
-              position={[5, 5, 5]} 
-              intensity={2} 
-              color={preset === 'crimson' ? '#ffebee' : preset === 'emerald' ? '#e6f4ea' : '#fff8e7'} 
-            />
-            <pointLight position={[-5, 4, -5]} intensity={1.5} color={preset === 'crimson' ? '#f43f5e' : preset === 'emerald' ? '#34d399' : '#d4af37'} />
-            <spotLight position={[0, 8, 0]} intensity={1.8} color={preset === 'crimson' ? '#f43f5e' : preset === 'emerald' ? '#34d399' : '#d4af37'} angle={0.8} penumbra={1} />
-
-            <Scene3DArrangement preset={preset} />
-
+            <directionalLight position={[5, 5, 5]} intensity={2} color="#fff8e7" />
+            <pointLight position={[-5, 4, -5]} intensity={1.5} color="#d4af37" />
+            <spotLight position={[0, 8, 0]} intensity={1.8} color="#d4af37" angle={0.8} penumbra={1} />
+            <GoldParticleStage />
             <OrbitControls
               enableZoom={false}
               enablePan={false}
@@ -289,18 +214,28 @@ export default function FlowerHeroCanvas({ preset = 'gold', setPreset }) {
         </div>
       )}
 
-      {/* Top Tagline Indicator */}
-      <div className="relative z-10 w-full flex justify-between items-center text-[10px] uppercase font-bold tracking-widest text-mutedGold-400 mt-10 sm:mt-8">
+      {/* Header Row: Interactive Art Stage title + Slide counter + Sound */}
+      <div className="relative z-10 w-full flex items-center justify-between text-[10px] uppercase font-bold tracking-widest text-mutedGold-400">
         <div className="flex items-center gap-1.5">
           <SparklesIcon className="w-3.5 h-3.5 text-mutedGold-400 animate-pulse" />
           <span>Interactive Art Stage</span>
         </div>
-        <div>
+        <div className="flex items-center gap-3">
           <span>Slide {activeIndex + 1} of {CAROUSEL_ITEMS.length}</span>
+          <button
+            onClick={toggleSound}
+            className="p-2 sm:p-2.5 rounded-full bg-obsidian-950/90 backdrop-blur-md border border-gold-500/30 text-gold-400 hover:text-pearl-100 transition-colors"
+            title="Toggle Luxury Ambient Sound"
+          >
+            {isPlayingSound
+              ? <Volume2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gold-400 animate-pulse" />
+              : <VolumeX className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-pearl-400" />
+            }
+          </button>
         </div>
       </div>
 
-      {/* Main Image Slider Layer */}
+      {/* Main Image Slider */}
       <div className="relative z-10 flex-1 w-full flex items-center justify-center">
         <div className="relative w-44 h-44 sm:w-72 sm:h-72 lg:w-[380px] lg:h-[380px] flex items-center justify-center">
           <AnimatePresence initial={false} custom={direction} mode="popLayout">
@@ -314,20 +249,16 @@ export default function FlowerHeroCanvas({ preset = 'gold', setPreset }) {
               drag="x"
               dragConstraints={{ left: 0, right: 0 }}
               dragElastic={0.6}
-              onDragEnd={(e, { offset, velocity }) => {
-                const swipeThreshold = 50;
-                if (offset.x < -swipeThreshold) {
-                  handleNext();
-                } else if (offset.x > swipeThreshold) {
-                  handlePrev();
-                }
+              onDragEnd={(e, { offset }) => {
+                if (offset.x < -50) handleNext();
+                else if (offset.x > 50) handlePrev();
               }}
               className="absolute w-full h-full flex items-center justify-center cursor-grab active:cursor-grabbing pointer-events-auto"
             >
               <img
                 src={currentItem.image}
                 alt={currentItem.name}
-                className={`w-full h-full object-contain filter ${glowShadowStyle} animate-float select-none`}
+                className="w-full h-full object-contain filter drop-shadow-[0_20px_50px_rgba(212,175,55,0.3)] animate-float select-none"
                 draggable="false"
               />
             </motion.div>
@@ -335,23 +266,23 @@ export default function FlowerHeroCanvas({ preset = 'gold', setPreset }) {
         </div>
       </div>
 
-      {/* Left/Right Arrow Navigation Overlays */}
+      {/* Left/Right Arrow Navigation */}
       <button
         onClick={handlePrev}
-        className="absolute left-4 top-[40%] -translate-y-1/2 z-20 pointer-events-auto w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full border border-mutedGold-500/20 bg-charcoal-950/40 backdrop-blur-md text-mutedGold-400 hover:text-pearl-50 hover:bg-mutedGold-500/10 hover:scale-110 active:scale-95 transition-all shadow-md animate-fade-in"
+        className="absolute left-4 top-[48%] -translate-y-1/2 z-20 pointer-events-auto w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full border border-mutedGold-500/20 bg-charcoal-950/40 backdrop-blur-md text-mutedGold-400 hover:text-pearl-50 hover:bg-mutedGold-500/10 hover:scale-110 active:scale-95 transition-all shadow-md"
         aria-label="Previous Slide"
       >
         <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
       </button>
       <button
         onClick={handleNext}
-        className="absolute right-4 top-[40%] -translate-y-1/2 z-20 pointer-events-auto w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full border border-mutedGold-500/20 bg-charcoal-950/40 backdrop-blur-md text-mutedGold-400 hover:text-pearl-50 hover:bg-mutedGold-500/10 hover:scale-110 active:scale-95 transition-all shadow-md animate-fade-in"
+        className="absolute right-4 top-[48%] -translate-y-1/2 z-20 pointer-events-auto w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full border border-mutedGold-500/20 bg-charcoal-950/40 backdrop-blur-md text-mutedGold-400 hover:text-pearl-50 hover:bg-mutedGold-500/10 hover:scale-110 active:scale-95 transition-all shadow-md"
         aria-label="Next Slide"
       >
         <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
       </button>
 
-      {/* Slider Pagination Dots (Above details, below image) */}
+      {/* Pagination Dots */}
       <div className="relative z-20 flex justify-center items-center gap-2 mb-2 pointer-events-auto">
         {CAROUSEL_ITEMS.map((item, idx) => (
           <button
@@ -369,8 +300,6 @@ export default function FlowerHeroCanvas({ preset = 'gold', setPreset }) {
 
       {/* Bottom Product Details & Order Banner */}
       <div className="relative z-10 w-full bg-charcoal-950/70 border border-mutedGold-500/20 backdrop-blur-md p-4 sm:p-5 rounded-2xl flex flex-col items-center text-center shadow-lg gap-2 pointer-events-auto">
-        
-        {/* Dynamic Details Fade Transition */}
         <AnimatePresence mode="wait">
           <motion.div
             key={activeIndex}
@@ -389,15 +318,13 @@ export default function FlowerHeroCanvas({ preset = 'gold', setPreset }) {
           </motion.div>
         </AnimatePresence>
 
-        {/* Action Button & Price Display */}
         <div className="w-full flex items-center justify-between gap-4 pt-1 border-t border-mutedGold-500/10">
           <div className="text-left">
             <span className="block text-[8px] uppercase tracking-widest text-pearl-400 font-bold">Price</span>
             <span className="font-serif text-sm sm:text-base font-bold text-gold-400">
-              {formatPrice ? formatPrice(currentItem.priceUSD) : `$${currentItem.priceUSD}`}
+              {formatPrice ? formatPrice(currentItem.priceUSD) : `₹${currentItem.priceUSD}`}
             </span>
           </div>
-
           <button
             onClick={() => addToCart({
               id: currentItem.id,
@@ -412,7 +339,6 @@ export default function FlowerHeroCanvas({ preset = 'gold', setPreset }) {
             <span>Order Now</span>
           </button>
         </div>
-
       </div>
 
     </div>
