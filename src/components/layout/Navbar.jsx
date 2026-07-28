@@ -12,7 +12,9 @@ import {
   Package,
   MapPin,
   Sparkles,
-  Clock
+  Clock,
+  Sun,
+  Moon
 } from 'lucide-react';
 
 export default function Navbar() {
@@ -28,6 +30,8 @@ export default function Navbar() {
     setIsTrackingOpen,
     currentUser,
     logoutUser,
+    theme,
+    toggleTheme
   } = useApp();
 
   const [scrolled, setScrolled] = useState(false);
@@ -81,7 +85,7 @@ export default function Navbar() {
           }`}
           style={{ backgroundColor: '#131417', borderColor: '#5e4d2d' }}
         >
-          {/* Brand Crest & Title - Compact Sizing to prevent collision on phone ratio */}
+          {/* Brand Crest & Title */}
           <a href="#" className="flex items-center gap-1.5 sm:gap-3 group shrink min-w-0 pr-1">
             <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-full border border-dashed border-[#b88d3e] flex items-center justify-center relative bg-[#1a1b20] shadow-gold-sm transition-transform duration-300 group-hover:scale-105 shrink-0">
               <span className="text-[5px] sm:text-[7px] text-[#d19e45] absolute top-0.5 sm:top-1 font-serif">✦</span>
@@ -97,9 +101,23 @@ export default function Navbar() {
             </div>
           </a>
 
-          {/* Right Control Icons Row - Exactly aligned on both Phone & Laptop */}
+          {/* Right Control Icons Row */}
           <div className="flex items-center gap-1 sm:gap-2.5 shrink-0">
             
+            {/* Dark Mode / Light Mode Toggle Button */}
+            <button
+              onClick={toggleTheme}
+              className="p-1.5 sm:p-2.5 rounded-full border border-[#5e4d2d] text-[#d9d8d6] hover:text-[#d19e45] hover:border-[#d19e45] transition-all bg-[#1a1b20] flex items-center justify-center"
+              style={{ backgroundColor: '#1a1b20', borderColor: '#5e4d2d' }}
+              title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            >
+              {theme === 'dark' ? (
+                <Sun className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#d19e45]" />
+              ) : (
+                <Moon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#d9d8d6]" />
+              )}
+            </button>
+
             {/* 1. Search Button */}
             <button
               onClick={() => setIsSearchOpen(true)}
@@ -140,7 +158,7 @@ export default function Navbar() {
               )}
             </button>
 
-            {/* 4. User Profile / Account Trigger Icon (👤) - Matches laptop behavior */}
+            {/* 4. User Profile / Account Trigger Icon (👤) */}
             {currentUser ? (
               <div className="relative">
                 <button
@@ -261,6 +279,20 @@ export default function Navbar() {
           className="pointer-events-auto border border-[#5e4d2d] rounded-3xl p-5 mt-2.5 max-w-7xl mx-3 sm:mx-auto space-y-4 shadow-2xl animate-fadeIn max-h-[75vh] overflow-y-auto bg-[#131417]"
           style={{ backgroundColor: '#131417', borderColor: '#5e4d2d' }}
         >
+          {/* Theme Switcher Banner in Mobile Drawer */}
+          <div className="p-3 rounded-2xl bg-[#1a1b20] border border-[#5e4d2d] flex items-center justify-between">
+            <div className="flex items-center gap-2 text-[#d9d8d6] text-xs">
+              {theme === 'dark' ? <Moon className="w-4 h-4 text-[#d19e45]" /> : <Sun className="w-4 h-4 text-[#d19e45]" />}
+              <span className="font-semibold">{theme === 'dark' ? 'Dark Mode Active' : 'Light Mode Active'}</span>
+            </div>
+            <button
+              onClick={toggleTheme}
+              className="px-3 py-1.5 rounded-full bg-[#d19e45]/20 border border-[#d19e45] text-[#d19e45] text-[10px] font-bold uppercase tracking-wider"
+            >
+              Switch to {theme === 'dark' ? 'Light' : 'Dark'}
+            </button>
+          </div>
+
           {!currentUser && (
             <div className="grid grid-cols-2 gap-3 pb-3 border-b border-[#5e4d2d]/30">
               <button

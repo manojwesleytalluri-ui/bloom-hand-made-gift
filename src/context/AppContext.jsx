@@ -118,7 +118,27 @@ export const AppProvider = ({ children }) => {
   }, []);
 
   // Theme State
-  const [theme, setTheme] = useState('dark');
+  const [theme, setTheme] = useState(() => {
+    const saved = localStorage.getItem('bloom_theme');
+    return saved || 'dark';
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('bloom_theme', theme);
+      if (theme === 'light') {
+        document.documentElement.classList.add('light-mode');
+        document.documentElement.classList.remove('dark');
+      } else {
+        document.documentElement.classList.remove('light-mode');
+        document.documentElement.classList.add('dark');
+      }
+    } catch (e) {}
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  };
 
   // Currency State
   const [currency, setCurrency] = useState('INR'); // Default to ₹ for Indian luxury market
@@ -534,19 +554,6 @@ export const AppProvider = ({ children }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedOccasion, setSelectedOccasion] = useState('All');
   const [selectedCategory, setSelectedCategory] = useState('All');
-
-  // Toggle Theme
-  const toggleTheme = () => {
-    const newTheme = theme === 'dark' ? 'light' : 'dark';
-    setTheme(newTheme);
-    if (newTheme === 'light') {
-      document.documentElement.classList.remove('dark');
-      document.documentElement.classList.add('light');
-    } else {
-      document.documentElement.classList.remove('light');
-      document.documentElement.classList.add('dark');
-    }
-  };
 
   // Price Format Helper
   const formatPrice = (priceVal) => {
