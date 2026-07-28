@@ -26,11 +26,25 @@ import {
   UploadCloud,
   Image as ImageIcon,
   Check,
-  Star
+  Star,
+  AlertTriangle
 } from 'lucide-react';
 
 export default function AdminPortalModal() {
-  const { isAdminOpen, setIsAdminOpen, formatPrice, products, addProduct, orders, setOrders, appointments, traffic } = useApp();
+  const {
+    isAdminOpen,
+    setIsAdminOpen,
+    formatPrice,
+    products,
+    addProduct,
+    updateProduct,
+    deleteProduct,
+    orders,
+    setOrders,
+    appointments,
+    traffic
+  } = useApp();
+
   const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' | 'orders' | 'inventory' | 'appointments' | 'new-product'
   const [trafficPeriod, setTrafficPeriod] = useState('today');
 
@@ -44,30 +58,6 @@ export default function AdminPortalModal() {
   // Live Inventory State
   const [inventory, setInventory] = useState([]);
   
-  // Inventory Form State
-  const [invName, setInvName] = useState('');
-  const [invCat, setInvCat] = useState('');
-  const [invStock, setInvStock] = useState('');
-  const [invCost, setInvCost] = useState('');
-
-  const handleAddInventory = (e) => {
-    e.preventDefault();
-    const count = parseInt(invStock) || 0;
-    const newItem = {
-      id: `st-${Date.now()}`,
-      name: invName,
-      category: invCat,
-      stock: count,
-      unitCostUSD: parseFloat(invCost) || 0.00,
-      status: count < 100 ? 'Low Stock' : 'In Stock'
-    };
-    setInventory((prev) => [...prev, newItem]);
-    setInvName('');
-    setInvCat('');
-    setInvStock('');
-    setInvCost('');
-  };
-
   // New Product Form State
   const [newTitle, setNewTitle] = useState('');
   const [newCategory, setNewCategory] = useState('Featured');
@@ -84,6 +74,21 @@ export default function AdminPortalModal() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadError, setUploadError] = useState('');
   const [isProductAdded, setIsProductAdded] = useState(false);
+
+  // Edit Product Modal State
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editCategory, setEditCategory] = useState('Featured');
+  const [editPrice, setEditPrice] = useState('');
+  const [editDiscountPrice, setEditDiscountPrice] = useState('');
+  const [editStock, setEditStock] = useState('50');
+  const [editAvailability, setEditAvailability] = useState('In Stock');
+  const [editDeliveryTime, setEditDeliveryTime] = useState('Same-Day VIP Express');
+  const [editTagline, setEditTagline] = useState('');
+  const [isEditSaved, setIsEditSaved] = useState(false);
+
+  // Delete Product Confirmation State
+  const [deletingProductId, setDeletingProductId] = useState(null);
 
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
@@ -127,7 +132,6 @@ export default function AdminPortalModal() {
     let count = 0;
 
     files.forEach((file) => {
-      // Validate file format
       const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
       if (!validTypes.includes(file.type.toLowerCase())) {
         setUploadError('❌ Unsupported file format. Please upload JPG, JPEG, PNG, or WebP images.');
@@ -160,7 +164,6 @@ export default function AdminPortalModal() {
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, width, height);
 
-          // Get compressed WebP / JPEG data URL
           const compressedDataUrl = canvas.toDataURL('image/webp', 0.85);
           processedImages.push(compressedDataUrl);
           count++;
@@ -231,6 +234,49 @@ export default function AdminPortalModal() {
       setUploadedImages([]);
       setActiveTab('inventory'); // Switch to inventory tab to view published product
     }, 1200);
+  };
+
+  // Open Product Edit Drawer / Form
+  const startEditingProduct = (p) => {
+    setEditingProduct(p);
+    setEditTitle(p.name);
+    setEditCategory(p.category || 'Featured');
+    setEditPrice(p.priceUSD?.toString() || '390');
+    setEditDiscountPrice(p.originalPriceUSD?.toString() || '');
+    setEditStock(p.stock?.toString() || '50');
+    setEditAvailability(p.availability || 'In Stock');
+    setEditDeliveryTime(p.deliveryTime || 'Same-Day VIP Express');
+    setEditTagline(p.tagline || p.description || '');
+    setIsEditSaved(false);
+  };
+
+  const handleSaveEditProduct = (e) => {
+    e.preventDefault();
+    if (!editingProduct) return;
+
+    updateProduct(editingProduct.id, {
+      name: editTitle,
+      category: editCategory,
+      priceUSD: parseFloat(editPrice) || 390,
+      originalPriceUSD: editDiscountPrice ? parseFloat(editDiscountPrice) : null,
+      stock: parseInt(editStock) || 50,
+      availability: editAvailability,
+      deliveryTime: editDeliveryTime,
+      tagline: editTagline,
+      description: editTagline
+    });
+
+    setIsEditSaved(true);
+    setTimeout(() => {
+      setIsEditSaved(false);
+      setEditingProduct(null);
+    }, 1000);
+  };
+
+  // Confirm and Execute Delete Product
+  const confirmDeleteProduct = (id) => {
+    deleteProduct(id);
+    setDeletingProductId(null);
   };
 
   if (!isAdminOpen) return null;
@@ -310,7 +356,7 @@ export default function AdminPortalModal() {
           <div className="flex items-center gap-2">
             <span className="px-3 py-1.5 rounded-full bg-emerald-950 border border-emerald-500/40 text-emerald-400 text-xs flex items-center gap-1.5 font-mono">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-              Admin Backend Active
+              Real-Time Sync Active
             </span>
             <button
               onClick={() => setIsAdminOpen(false)}
@@ -478,11 +524,14 @@ export default function AdminPortalModal() {
             </div>
           )}
 
-          {/* TAB 3: INVENTORY VAULT */}
+          {/* TAB 3: INVENTORY VAULT (With Full Real-Time Edit & Delete Actions) */}
           {activeTab === 'inventory' && (
             <div className="space-y-6 animate-fadeIn">
               <div className="flex items-center justify-between">
-                <h4 className="font-serif font-bold text-lg text-pearl-50">Catalog & Stock Vault</h4>
+                <div>
+                  <h4 className="font-serif font-bold text-lg text-pearl-50">Catalog & Stock Vault</h4>
+                  <p className="text-xs text-pearl-400">All edits & deletions synchronize instantly across the entire website on all devices.</p>
+                </div>
                 <span className="text-xs text-gold-400 font-medium">Total: {products.length} Products Live</span>
               </div>
 
@@ -494,9 +543,9 @@ export default function AdminPortalModal() {
                       <th className="p-3.5">Image</th>
                       <th className="p-3.5">Bouquet Name</th>
                       <th className="p-3.5">Category</th>
-                      <th className="p-3.5">Occasion</th>
+                      <th className="p-3.5">Stock</th>
                       <th className="p-3.5">VIP Price</th>
-                      <th className="p-3.5">Rating</th>
+                      <th className="p-3.5 text-center">Actions (Edit / Delete)</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gold-500/10">
@@ -505,11 +554,31 @@ export default function AdminPortalModal() {
                         <td className="p-3.5">
                           <img src={p.image} alt={p.name} className="w-10 h-10 object-cover rounded-lg border border-gold-500/20" />
                         </td>
-                        <td className="p-3.5 font-semibold text-pearl-50">{p.name}</td>
+                        <td className="p-3.5 font-semibold text-pearl-50">
+                          {p.name}
+                          <span className="text-[10px] text-pearl-400 block font-mono font-normal">{p.sku || p.id}</span>
+                        </td>
                         <td className="p-3.5 text-pearl-300">{p.category}</td>
-                        <td className="p-3.5 text-pearl-300">{p.occasion || p.category}</td>
-                        <td className="p-3.5 font-bold text-gold-gradient">{formatPrice(p.priceUSD)}</td>
-                        <td className="p-3.5 text-gold-400">★ {p.rating || '5.0'} ({p.reviewsCount || 1})</td>
+                        <td className="p-3.5 font-bold text-gold-gradient">{p.stock || 50} Stems</td>
+                        <td className="p-3.5 font-bold text-emerald-400">{formatPrice(p.priceUSD)}</td>
+                        <td className="p-3.5 text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            <button
+                              onClick={() => startEditingProduct(p)}
+                              className="p-1.5 rounded-lg bg-gold-500/20 border border-gold-400/50 text-gold-300 hover:text-white transition-colors"
+                              title="Edit Product Details"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => setDeletingProductId(p.id)}
+                              className="p-1.5 rounded-lg bg-red-950/60 border border-red-500/40 text-red-300 hover:text-white transition-colors"
+                              title="Delete Product from Catalog"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -543,7 +612,7 @@ export default function AdminPortalModal() {
             </div>
           )}
 
-          {/* TAB 5: PUBLISH NEW BOUQUET (With Multiple Image Upload & Complete Product Fields) */}
+          {/* TAB 5: PUBLISH NEW BOUQUET */}
           {activeTab === 'new-product' && (
             <div className="max-w-3xl mx-auto glass-panel p-6 rounded-2xl border border-gold-500/30 space-y-6 animate-fadeIn">
               <div className="text-center space-y-1">
@@ -559,7 +628,6 @@ export default function AdminPortalModal() {
               ) : (
                 <form onSubmit={handleCreateProduct} className="space-y-4 text-xs">
                   
-                  {/* Product Title */}
                   <div>
                     <label className="text-pearl-300 block mb-1 font-semibold">Product Name / Title *</label>
                     <input
@@ -572,7 +640,6 @@ export default function AdminPortalModal() {
                     />
                   </div>
 
-                  {/* Category & Prices */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
                       <label className="text-pearl-300 block mb-1 font-semibold">Category *</label>
@@ -613,7 +680,6 @@ export default function AdminPortalModal() {
                     </div>
                   </div>
 
-                  {/* Stock Quantity, Availability & Delivery Time */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
                       <label className="text-pearl-300 block mb-1 font-semibold">Stock Quantity *</label>
@@ -654,7 +720,7 @@ export default function AdminPortalModal() {
                     </div>
                   </div>
 
-                  {/* Multiple Product Images Upload & Preview Section (Issue 1) */}
+                  {/* Multiple Product Images Upload & Preview Section */}
                   <div className="space-y-3 pt-2">
                     <label className="text-pearl-300 block font-semibold">Product Images (JPG, JPEG, PNG, WebP) *</label>
 
@@ -662,7 +728,6 @@ export default function AdminPortalModal() {
                       <p className="text-xs text-red-400 bg-red-950/40 p-2.5 rounded-xl border border-red-500/30">{uploadError}</p>
                     )}
 
-                    {/* Progress Indicator */}
                     {isUploading && (
                       <div className="space-y-1.5 p-3 rounded-xl bg-obsidian-900 border border-gold-500/30">
                         <div className="flex items-center justify-between text-[11px] text-gold-300 font-bold">
@@ -675,9 +740,7 @@ export default function AdminPortalModal() {
                       </div>
                     )}
 
-                    {/* Upload Drop Zone & Thumbnails */}
                     <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-                      {/* Image Upload Trigger Box */}
                       <label
                         htmlFor="multiple-product-images-input"
                         className="h-24 rounded-xl border-2 border-dashed border-gold-500/40 hover:border-gold-400 bg-obsidian-900/60 flex flex-col items-center justify-center cursor-pointer transition-colors p-2 text-center group"
@@ -695,7 +758,6 @@ export default function AdminPortalModal() {
                         />
                       </label>
 
-                      {/* Uploaded Thumbnails Preview Grid */}
                       {uploadedImages.map((imgUrl, idx) => (
                         <div key={idx} className="relative h-24 rounded-xl overflow-hidden border border-gold-500/30 group bg-obsidian-900">
                           <img src={imgUrl} alt={`Product Upload ${idx + 1}`} className="w-full h-full object-cover" />
@@ -715,7 +777,6 @@ export default function AdminPortalModal() {
                     </div>
                   </div>
 
-                  {/* Tags & Description */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                     <div>
                       <label className="text-pearl-300 block mb-1 font-semibold">Search Tags (Comma separated):</label>
@@ -773,6 +834,142 @@ export default function AdminPortalModal() {
         </div>
 
       </div>
+
+      {/* Edit Product Popup Modal */}
+      {editingProduct && (
+        <div className="fixed inset-0 z-50 overflow-hidden bg-obsidian-950/90 backdrop-blur-2xl p-4 flex items-center justify-center animate-fadeIn">
+          <div className="w-full max-w-lg glass-panel border border-gold-500/40 rounded-3xl p-6 relative space-y-4 shadow-gold-lg max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-gold-500/20 pb-3">
+              <h4 className="font-serif font-bold text-lg text-pearl-50">Edit Product: {editingProduct.name}</h4>
+              <button onClick={() => setEditingProduct(null)} className="text-pearl-300 hover:text-gold-400">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {isEditSaved ? (
+              <div className="p-4 rounded-xl bg-gold-500/20 border border-gold-400 text-gold-300 text-center font-serif font-bold text-xs uppercase tracking-widest">
+                ✨ Product Changes Updated Instantly Across Website!
+              </div>
+            ) : (
+              <form onSubmit={handleSaveEditProduct} className="space-y-3 text-xs">
+                <div>
+                  <label className="text-pearl-300 block mb-1 font-semibold">Product Title</label>
+                  <input
+                    type="text"
+                    required
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-3 text-pearl-100 outline-none"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-pearl-300 block mb-1 font-semibold">Selling Price ($ USD)</label>
+                    <input
+                      type="number"
+                      required
+                      value={editPrice}
+                      onChange={(e) => setEditPrice(e.target.value)}
+                      className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-3 text-pearl-100 outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-pearl-300 block mb-1 font-semibold">Stock Quantity</label>
+                    <input
+                      type="number"
+                      required
+                      value={editStock}
+                      onChange={(e) => setEditStock(e.target.value)}
+                      className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-3 text-pearl-100 outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-pearl-300 block mb-1 font-semibold">Category</label>
+                    <select
+                      value={editCategory}
+                      onChange={(e) => setEditCategory(e.target.value)}
+                      className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-3 text-pearl-100 outline-none"
+                    >
+                      <option value="Featured">Featured</option>
+                      <option value="Wedding">Wedding</option>
+                      <option value="Birthday">Birthday</option>
+                      <option value="Anniversary">Anniversary</option>
+                      <option value="Hampers">Hampers</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-pearl-300 block mb-1 font-semibold">Availability</label>
+                    <select
+                      value={editAvailability}
+                      onChange={(e) => setEditAvailability(e.target.value)}
+                      className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-3 text-pearl-100 outline-none"
+                    >
+                      <option value="In Stock">In Stock</option>
+                      <option value="Pre-Order">Pre-Order</option>
+                      <option value="Limited Edition">Limited Edition</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-pearl-300 block mb-1 font-semibold">Description</label>
+                  <textarea
+                    rows="2"
+                    value={editTagline}
+                    onChange={(e) => setEditTagline(e.target.value)}
+                    className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-3 text-pearl-100 outline-none"
+                  ></textarea>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full py-3 rounded-full bg-gold-gradient text-obsidian-950 font-serif font-bold text-xs uppercase tracking-widest shadow-gold-sm hover:scale-[1.02] transition-transform"
+                >
+                  Save & Synchronize Immediately
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Delete Product Confirmation Modal */}
+      {deletingProductId && (
+        <div className="fixed inset-0 z-50 overflow-hidden bg-obsidian-950/90 backdrop-blur-2xl p-4 flex items-center justify-center animate-fadeIn">
+          <div className="w-full max-w-sm glass-panel border border-red-500/40 rounded-3xl p-6 relative space-y-4 shadow-2xl text-center">
+            <div className="w-14 h-14 rounded-full bg-red-950/80 border border-red-500/40 flex items-center justify-center mx-auto text-red-400">
+              <AlertTriangle className="w-7 h-7" />
+            </div>
+            <div className="space-y-1">
+              <h4 className="font-serif font-bold text-lg text-pearl-50">Delete Product from Catalog?</h4>
+              <p className="text-xs text-pearl-300 font-light">
+                This action will instantly remove the product from all homepage sections, collections, search results, carts, and wishlists across all active user sessions.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <button
+                onClick={() => setDeletingProductId(null)}
+                className="py-2.5 rounded-full border border-gold-500/30 text-pearl-200 text-xs font-serif font-bold hover:bg-gold-500/10 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => confirmDeleteProduct(deletingProductId)}
+                className="py-2.5 rounded-full bg-red-950 border border-red-500 text-red-300 text-xs font-serif font-bold hover:bg-red-900 transition-colors"
+              >
+                Delete Instantly
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

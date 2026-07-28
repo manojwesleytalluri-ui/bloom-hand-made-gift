@@ -12,26 +12,110 @@ export const currencies = {
 };
 
 export const AppProvider = ({ children }) => {
-  // Products Catalog State (Persists admin added products)
+  // Persistent Products Database with Real-Time Cross-Tab Broadcast Synchronization
   const [products, setProducts] = useState(() => {
-    const saved = localStorage.getItem('bloom_custom_products');
+    const saved = localStorage.getItem('bloom_live_products_db');
     if (saved) {
       try {
-        const custom = JSON.parse(saved);
-        return [...custom, ...PRODUCTS];
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       } catch (e) {}
     }
     return PRODUCTS;
   });
 
-  const addProduct = (newProduct) => {
-    setProducts((prev) => [newProduct, ...prev]);
+  // Sync products database and broadcast across all active browser windows & tabs
+  const syncProductsToStorage = (updatedProducts, eventPayload) => {
+    setProducts(updatedProducts);
     try {
-      const saved = localStorage.getItem('bloom_custom_products');
-      const customList = saved ? JSON.parse(saved) : [];
-      localStorage.setItem('bloom_custom_products', JSON.stringify([newProduct, ...customList]));
+      localStorage.setItem('bloom_live_products_db', JSON.stringify(updatedProducts));
+      if (typeof window !== 'undefined' && window.BroadcastChannel) {
+        const channel = new BroadcastChannel('bloom_product_sync_channel');
+        channel.postMessage({ type: 'PRODUCTS_UPDATED', timestamp: Date.now(), ...eventPayload });
+        channel.close();
+      }
     } catch (e) {}
   };
+
+  // Add New Product
+  const addProduct = (newProduct) => {
+    const formatted = {
+      ...newProduct,
+      sku: newProduct.sku || `SKU-${Math.floor(100000 + Math.random() * 900000)}`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    const updated = [formatted, ...products];
+    syncProductsToStorage(updated, { action: 'ADD', productId: formatted.id });
+  };
+
+  // Update / Edit Existing Product
+  const updateProduct = (productId, updatedFields) => {
+    const updated = products.map((p) =>
+      p.id === productId ? { ...p, ...updatedFields, updatedAt: new Date().toISOString() } : p
+    );
+    syncProductsToStorage(updated, { action: 'UPDATE', productId });
+
+    // Instantly sync cart items matching this product ID
+    setCart((prevCart) =>
+      prevCart.map((item) =>
+        item.id === productId
+          ? {
+              ...item,
+              name: updatedFields.name || item.name,
+              priceUSD: updatedFields.priceUSD !== undefined ? updatedFields.priceUSD : item.priceUSD,
+              image: updatedFields.image || item.image
+            }
+          : item
+      )
+    );
+  };
+
+  // Delete Product
+  const deleteProduct = (productId) => {
+    const updated = products.filter((p) => p.id !== productId);
+    syncProductsToStorage(updated, { action: 'DELETE', productId });
+
+    // Instantly remove deleted product from cart and wishlist across active sessions
+    setCart((prevCart) => prevCart.filter((item) => item.id !== productId));
+    setWishlist((prevWishlist) => prevWishlist.filter((id) => id !== productId));
+  };
+
+  // Cross-tab real-time listener for multi-window synchronization
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleStorageChange = (e) => {
+      if (e.key === 'bloom_live_products_db' && e.newValue) {
+        try {
+          const fresh = JSON.parse(e.newValue);
+          if (Array.isArray(fresh)) setProducts(fresh);
+        } catch (err) {}
+      }
+    };
+
+    let channel = null;
+    if (window.BroadcastChannel) {
+      channel = new BroadcastChannel('bloom_product_sync_channel');
+      channel.onmessage = (event) => {
+        if (event.data?.type === 'PRODUCTS_UPDATED') {
+          const saved = localStorage.getItem('bloom_live_products_db');
+          if (saved) {
+            try {
+              const fresh = JSON.parse(saved);
+              if (Array.isArray(fresh)) setProducts(fresh);
+            } catch (err) {}
+          }
+        }
+      };
+    }
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      if (channel) channel.close();
+    };
+  }, []);
 
   // Theme State
   const [theme, setTheme] = useState('dark');
@@ -575,6 +659,8 @@ export const AppProvider = ({ children }) => {
         setSelectedCategory,
         products,
         addProduct,
+        updateProduct,
+        deleteProduct,
       }}
     >
       {children}
