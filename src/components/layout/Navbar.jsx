@@ -72,50 +72,53 @@ export default function Navbar() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-40 transition-all duration-500 pointer-events-none">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+      <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 pt-2.5 sm:pt-4">
         <div
-          className={`pointer-events-auto glass-panel rounded-full transition-all duration-500 px-4 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between border ${
+          className={`pointer-events-auto rounded-full transition-all duration-500 px-3 sm:px-6 py-2 sm:py-2.5 flex items-center justify-between border shadow-2xl ${
             scrolled
-              ? 'border-[#5e4d2d] shadow-gold-md bg-[#131417]/95 backdrop-blur-2xl'
-              : 'border-[#5e4d2d]/80 bg-[#131417]/90 backdrop-blur-xl'
+              ? 'border-[#5e4d2d] bg-[#131417] backdrop-blur-2xl'
+              : 'border-[#5e4d2d]/90 bg-[#131417]/95 backdrop-blur-xl'
           }`}
+          style={{ backgroundColor: '#131417', borderColor: '#5e4d2d' }}
         >
-          {/* Brand Crest & Title - Exact Color Scheme from 2nd Screenshot */}
-          <a href="#" className="flex items-center gap-3 group">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-dashed border-[#b88d3e] flex items-center justify-center relative bg-[#1a1b20] shadow-gold-sm transition-transform duration-300 group-hover:scale-105">
-              <span className="text-[7px] text-[#d19e45] absolute top-1 font-serif">✦</span>
-              <span className="font-serif font-bold text-xs sm:text-sm text-[#d19e45] tracking-tighter mt-1">BH</span>
+          {/* Brand Crest & Title - Mobile Responsive Layout */}
+          <a href="#" className="flex items-center gap-2 sm:gap-3 group shrink-0 max-w-[62%] sm:max-w-none">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border border-dashed border-[#b88d3e] flex items-center justify-center relative bg-[#1a1b20] shadow-gold-sm transition-transform duration-300 group-hover:scale-105 shrink-0">
+              <span className="text-[6px] sm:text-[7px] text-[#d19e45] absolute top-0.5 sm:top-1 font-serif">✦</span>
+              <span className="font-serif font-bold text-[10px] sm:text-xs sm:text-sm text-[#d19e45] tracking-tighter mt-0.5 sm:mt-1">BH</span>
             </div>
-            <div className="flex flex-col">
-              <span className="font-serif text-base sm:text-lg font-bold tracking-wide text-[#d19e45] group-hover:text-[#e5b35a] transition-colors leading-tight">
+            <div className="flex flex-col min-w-0">
+              <span className="font-serif text-[13px] sm:text-base font-bold tracking-wide text-[#d19e45] group-hover:text-[#e5b35a] transition-colors leading-tight truncate">
                 Bloom Hand Made Gift
               </span>
-              <span className="text-[8px] sm:text-[9px] uppercase tracking-[0.25em] text-[#d9d8d6] font-semibold opacity-90 leading-tight">
+              <span className="text-[7px] sm:text-[9px] uppercase tracking-[0.16em] sm:tracking-[0.25em] text-[#d9d8d6] font-semibold opacity-90 leading-tight truncate">
                 HAUTE COUTURE FLORIST
               </span>
             </div>
           </a>
 
-          {/* Right Control Icons Row - Exactly matching 2nd screenshot: (Search) (Heart^2) (Bag^1) (Menu) */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          {/* Right Control Icons Row - Fits mobile screens seamlessly */}
+          <div className="flex items-center gap-1 sm:gap-2.5 shrink-0">
             
             {/* 1. Search Button */}
             <button
               onClick={() => setIsSearchOpen(true)}
-              className="p-2 sm:p-2.5 rounded-full border border-[#5e4d2d] text-[#d9d8d6] hover:text-[#d19e45] hover:border-[#d19e45] transition-all bg-[#1a1b20]"
+              className="p-1.5 sm:p-2.5 rounded-full border border-[#5e4d2d] text-[#d9d8d6] hover:text-[#d19e45] hover:border-[#d19e45] transition-all bg-[#1a1b20] flex items-center justify-center"
+              style={{ backgroundColor: '#1a1b20', borderColor: '#5e4d2d' }}
               title="Search Catalog"
             >
-              <Search className="w-4 h-4" />
+              <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#d9d8d6]" />
             </button>
 
             {/* 2. Wishlist Button */}
             <button
               onClick={() => setIsWishlistOpen(true)}
-              className="relative p-2 sm:p-2.5 rounded-full border border-[#5e4d2d] text-[#d9d8d6] hover:text-[#d19e45] hover:border-[#d19e45] transition-all bg-[#1a1b20]"
+              className="relative p-1.5 sm:p-2.5 rounded-full border border-[#5e4d2d] text-[#d9d8d6] hover:text-[#d19e45] hover:border-[#d19e45] transition-all bg-[#1a1b20] flex items-center justify-center"
+              style={{ backgroundColor: '#1a1b20', borderColor: '#5e4d2d' }}
               title="Wishlist"
             >
-              <Heart className="w-4 h-4" />
-              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#d19e45] text-[#131417] text-[9px] font-bold flex items-center justify-center shadow-gold-sm">
+              <Heart className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#d9d8d6]" />
+              <span className="absolute -top-1 -right-1 w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-[#d19e45] text-[#131417] text-[8px] sm:text-[9px] font-bold flex items-center justify-center shadow-gold-sm">
                 {wishlist.length || 2}
               </span>
             </button>
@@ -123,11 +126,12 @@ export default function Navbar() {
             {/* 3. Cart Button */}
             <button
               onClick={() => setIsCartOpen(true)}
-              className="relative p-2 sm:p-2.5 rounded-full border border-[#5e4d2d] text-[#d9d8d6] hover:text-[#d19e45] hover:border-[#d19e45] transition-all bg-[#1a1b20]"
+              className="relative p-1.5 sm:p-2.5 rounded-full border border-[#5e4d2d] text-[#d9d8d6] hover:text-[#d19e45] hover:border-[#d19e45] transition-all bg-[#1a1b20] flex items-center justify-center"
+              style={{ backgroundColor: '#1a1b20', borderColor: '#5e4d2d' }}
               title="Shopping Cart"
             >
-              <ShoppingBag className="w-4 h-4" />
-              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#d19e45] text-[#131417] text-[9px] font-bold flex items-center justify-center shadow-gold-sm">
+              <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#d9d8d6]" />
+              <span className="absolute -top-1 -right-1 w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-[#d19e45] text-[#131417] text-[8px] sm:text-[9px] font-bold flex items-center justify-center shadow-gold-sm">
                 {totalCartCount || 1}
               </span>
             </button>
@@ -137,14 +141,15 @@ export default function Navbar() {
               <div className="relative">
                 <button
                   onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-                  className="p-2 sm:p-2.5 rounded-full border border-[#5e4d2d] text-[#d9d8d6] hover:text-[#d19e45] hover:border-[#d19e45] transition-all bg-[#1a1b20] flex items-center gap-1"
+                  className="p-1.5 sm:p-2.5 rounded-full border border-[#5e4d2d] text-[#d9d8d6] hover:text-[#d19e45] hover:border-[#d19e45] transition-all bg-[#1a1b20] flex items-center gap-1"
+                  style={{ backgroundColor: '#1a1b20', borderColor: '#5e4d2d' }}
                 >
-                  <User className="w-4 h-4 text-[#d19e45]" />
+                  <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#d19e45]" />
                 </button>
 
                 {/* Profile Dropdown */}
                 {profileDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-64 glass-panel border border-[#5e4d2d] rounded-2xl p-4 shadow-gold-lg space-y-3 animate-fadeIn text-xs z-50 bg-[#131417]">
+                  <div className="absolute right-0 mt-2 w-60 sm:w-64 border border-[#5e4d2d] rounded-2xl p-4 shadow-2xl space-y-3 animate-fadeIn text-xs z-50 bg-[#131417]">
                     <div className="border-b border-[#5e4d2d]/30 pb-3">
                       <p className="text-[11px] text-[#d19e45] font-bold uppercase tracking-wider">
                         Welcome back, {firstName}!
@@ -232,10 +237,11 @@ export default function Navbar() {
             ) : (
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="p-2 sm:p-2.5 rounded-full border border-[#5e4d2d] text-[#d9d8d6] hover:text-[#d19e45] hover:border-[#d19e45] transition-all bg-[#1a1b20]"
+                className="p-1.5 sm:p-2.5 rounded-full border border-[#5e4d2d] text-[#d9d8d6] hover:text-[#d19e45] hover:border-[#d19e45] transition-all bg-[#1a1b20]"
+                style={{ backgroundColor: '#1a1b20', borderColor: '#5e4d2d' }}
                 title="Toggle Menu"
               >
-                {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+                {mobileMenuOpen ? <X className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#d9d8d6]" /> : <Menu className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#d9d8d6]" />}
               </button>
             )}
 
@@ -244,18 +250,21 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Navigation Drawer Menu */}
+      {/* Navigation Drawer Menu for Mobile */}
       {mobileMenuOpen && (
-        <div className="pointer-events-auto glass-panel border border-[#5e4d2d] rounded-3xl p-6 mt-3 max-w-7xl mx-auto space-y-4 shadow-gold-lg animate-fadeIn max-h-[75vh] overflow-y-auto bg-[#131417]">
+        <div
+          className="pointer-events-auto border border-[#5e4d2d] rounded-3xl p-5 mt-2.5 max-w-7xl mx-3 sm:mx-auto space-y-4 shadow-2xl animate-fadeIn max-h-[75vh] overflow-y-auto bg-[#131417]"
+          style={{ backgroundColor: '#131417', borderColor: '#5e4d2d' }}
+        >
           {!currentUser && (
-            <div className="grid grid-cols-2 gap-3 pb-4 border-b border-[#5e4d2d]/30">
+            <div className="grid grid-cols-2 gap-3 pb-3 border-b border-[#5e4d2d]/30">
               <button
                 onClick={() => {
                   setAuthMode('login');
                   setIsAuthOpen(true);
                   setMobileMenuOpen(false);
                 }}
-                className="w-full py-2.5 rounded-full border border-[#5e4d2d] text-center text-xs uppercase font-semibold text-[#d9d8d6]"
+                className="w-full py-2 rounded-full border border-[#5e4d2d] text-center text-xs uppercase font-semibold text-[#d9d8d6]"
               >
                 Login
               </button>
@@ -265,14 +274,14 @@ export default function Navbar() {
                   setIsAuthOpen(true);
                   setMobileMenuOpen(false);
                 }}
-                className="w-full py-2.5 rounded-full bg-[#d19e45]/20 border border-[#d19e45] text-center text-xs uppercase font-semibold text-[#d19e45]"
+                className="w-full py-2 rounded-full bg-[#d19e45]/20 border border-[#d19e45] text-center text-xs uppercase font-semibold text-[#d19e45]"
               >
                 Register
               </button>
             </div>
           )}
 
-          <div className="flex flex-col space-y-3 pt-2">
+          <div className="flex flex-col space-y-2.5 pt-1">
             {navLinks.map((link) => (
               <a
                 key={link.name}
