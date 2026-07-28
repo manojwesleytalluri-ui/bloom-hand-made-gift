@@ -280,3 +280,87 @@ html {
 .light .bg-charcoal-950 {
   background-color: #faf9f6 !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   LIGHT MODE COMPLETE BACKGROUND & TEXT OVERRIDES
+   ═══════════════════════════════════════════════════════════════ */
+html.light,
+html.light-mode,
+html.light body,
+html.light-mode body {
+  background-color: #faf8f5 !important;
+  color: #1a1b20 !important;
+}
+
+html.light main,
+html.light-mode main,
+html.light section,
+html.light-mode section,
+html.light footer,
+html.light-mode footer {
+  background-color: #faf8f5 !important;
+  color: #1a1b20 !important;
+}
+
+/* Light mode background overrides for all dark utility classes */
+html.light .bg-charcoal-950,
+html.light-mode .bg-charcoal-950,
+html.light .bg-obsidian-950,
+html.light-mode .bg-obsidian-950,
+html.light .bg-\[\#121215\],
+html.light-mode .bg-\[\#121215\],
+html.light .bg-\[\#0d0e12\],
+html.light-mode .bg-\[\#0d0e12\],
+html.light .bg-\[\#131417\],
+html.light-mode .bg-\[\#131417\] {
+  background-color: #faf8f5 !important;
+}
+
+html.light .bg-obsidian-900,
+html.light-mode .bg-obsidian-900,
+html.light .bg-charcoal-900,
+html.light-mode .bg-charcoal-900,
+html.light .bg-\[\#1a1b20\],
+html.light-mode .bg-\[\#1a1b20\] {
+  background-color: #ffffff !important;
+  border-color: rgba(196, 164, 89, 0.25) !important;
+}
+
+/* Light Mode Glass Panels */
+html.light .glass-panel,
+html.light-mode .glass-panel {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-color: rgba(196, 164, 89, 0.35) !important;
+  box-shadow: 0 15px 40px rgba(184, 141, 62, 0.12) !important;
+  color: #1a1b20 !important;
+}
+
+/* Light Mode Header Pill Container */
+html.light header div[style*="background"],
+html.light-mode header div[style*="background"] {
+  background-color: #ffffff !important;
+  border-color: #c4a459 !important;
+  box-shadow: 0 10px 30px rgba(184, 141, 62, 0.15) !important;
+}
+
+/* Light Mode Header Controls */
+html.light header button[style*="background"],
+html.light-mode header button[style*="background"] {
+  background-color: #f4f2ec !important;
+  border-color: #c4a459 !important;
+  color: #1a1b20 !important;
+}
+
+/* Light Mode Text Legibility */
+html.light .text-pearl-50,
+html.light-mode .text-pearl-50,
+html.light .text-pearl-100,
+html.light-mode .text-pearl-100,
+html.light .text-pearl-200,
+html.light-mode .text-pearl-200,
+html.light .text-pearl-300,
+html.light-mode .text-pearl-300,
+html.light .text-\[\#d9d8d6\],
+html.light-mode .text-\[\#d9d8d6\] {
+  color: #26272e !important;
+}
