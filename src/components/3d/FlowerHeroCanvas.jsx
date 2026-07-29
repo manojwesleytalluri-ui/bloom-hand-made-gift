@@ -108,10 +108,6 @@ export default function FlowerHeroCanvas() {
         <div className="absolute bottom-10 right-10 w-40 h-40 rounded-full bg-gold-400/5 blur-2xl" />
       </div>
 
-      {/* Header Row */}
-      <div className="relative z-10 w-full flex items-center justify-end text-[10px] uppercase font-bold tracking-widest text-mutedGold-400">
-        <span>Slide {activeIndex + 1} of {CAROUSEL_ITEMS.length}</span>
-      </div>
 
       {/* Main Image Slider */}
       <div className="relative z-10 flex-1 w-full flex items-center justify-center">
