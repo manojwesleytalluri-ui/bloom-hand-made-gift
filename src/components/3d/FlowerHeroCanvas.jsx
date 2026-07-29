@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, ShoppingBag, Sparkles as SparklesIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ShoppingBag } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { assetPath } from '../../utils/assetPath';
 
@@ -109,11 +109,7 @@ export default function FlowerHeroCanvas() {
       </div>
 
       {/* Header Row */}
-      <div className="relative z-10 w-full flex items-center justify-between text-[10px] uppercase font-bold tracking-widest text-mutedGold-400">
-        <div className="flex items-center gap-1.5">
-          <SparklesIcon className="w-3.5 h-3.5 text-mutedGold-400 animate-pulse" />
-          <span>Luxury Bouquet Gallery</span>
-        </div>
+      <div className="relative z-10 w-full flex items-center justify-end text-[10px] uppercase font-bold tracking-widest text-mutedGold-400">
         <span>Slide {activeIndex + 1} of {CAROUSEL_ITEMS.length}</span>
       </div>
 
