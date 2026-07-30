@@ -1,6 +1,6 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
-import { X, User, Mail, Phone, Calendar, Clock, MapPin, Package, ShieldCheck, LogOut, Award } from 'lucide-react';
+import { X, User, Mail, Phone, Calendar, Clock, MapPin, Package, ShieldCheck, LogOut, Award, Check, Home, Briefcase, Trash2, Star, Plus } from 'lucide-react';
 
 export default function UserProfileModal() {
   const {
@@ -9,6 +9,10 @@ export default function UserProfileModal() {
     currentUser,
     logoutUser,
     activeCheckoutAddress,
+    userAddresses,
+    removeAddress,
+    makeAddressDefault,
+    setIsCheckoutOpen,
     orders,
     formatPrice,
     setIsTrackingOpen
@@ -104,19 +108,78 @@ export default function UserProfileModal() {
           </div>
         </div>
 
-        {/* Saved Bhimavaram Address */}
-        <div className="space-y-2 text-xs">
-          <h4 className="font-serif font-bold text-pearl-100 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
-            <MapPin className="w-3.5 h-3.5 text-gold-400" />
-            <span>Saved Delivery Address</span>
-          </h4>
-          <div className="p-3.5 rounded-2xl bg-obsidian-900 border border-gold-500/20 text-pearl-200">
-            {activeCheckoutAddress?.houseNo ? (
-              <p>
-                {activeCheckoutAddress.houseNo}, {activeCheckoutAddress.street}, {activeCheckoutAddress.locality}, {activeCheckoutAddress.city}, {activeCheckoutAddress.state} - {activeCheckoutAddress.pinCode}
-              </p>
+        {/* Saved Addresses Section */}
+        <div className="space-y-2.5 text-xs">
+          <div className="flex items-center justify-between">
+            <h4 className="font-serif font-bold text-pearl-100 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+              <MapPin className="w-3.5 h-3.5 text-gold-400" />
+              <span>Saved Delivery Addresses ({userAddresses ? userAddresses.length : 0})</span>
+            </h4>
+
+            <button
+              type="button"
+              onClick={() => {
+                setIsProfileOpen(false);
+                setIsCheckoutOpen(true);
+              }}
+              className="text-[10px] text-gold-400 hover:underline font-serif font-bold uppercase tracking-wider flex items-center gap-1"
+            >
+              <Plus className="w-3 h-3" />
+              <span>Add / Manage</span>
+            </button>
+          </div>
+
+          <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+            {!userAddresses || userAddresses.length === 0 ? (
+              <div className="p-3.5 rounded-2xl bg-obsidian-900 border border-gold-500/20 text-pearl-400 italic text-center">
+                No saved address yet. Address will be saved upon placing your first order.
+              </div>
             ) : (
-              <p className="text-pearl-400 italic">No saved address yet. Address will be saved upon placing your first order.</p>
+              userAddresses.map((addr) => (
+                <div key={addr.addressId} className="p-3 rounded-2xl bg-obsidian-900 border border-gold-500/20 space-y-1.5 relative">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="font-serif font-bold text-pearl-100">{addr.fullName}</span>
+                      <span className="px-1.5 py-0.5 rounded bg-gold-500/10 border border-gold-500/20 text-gold-300 text-[9px] uppercase font-bold tracking-wider">
+                        {addr.addressType || 'Home'}
+                      </span>
+                      {addr.isDefault && (
+                        <span className="px-1.5 py-0.5 rounded bg-emerald-950 border border-emerald-500/40 text-emerald-300 text-[9px] font-bold uppercase tracking-wider">
+                          ✓ Default
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                      {!addr.isDefault && (
+                        <button
+                          type="button"
+                          onClick={() => makeAddressDefault(addr.addressId)}
+                          className="p-1 rounded bg-obsidian-950 border border-gold-500/20 text-pearl-300 hover:text-gold-400 text-[10px]"
+                          title="Set as Default"
+                        >
+                          <Star className="w-3 h-3" />
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => removeAddress(addr.addressId)}
+                        className="p-1 rounded bg-obsidian-950 border border-red-500/30 text-red-400 hover:bg-red-500/10 text-[10px]"
+                        title="Delete Address"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <p className="text-[11px] text-pearl-300">
+                    {addr.houseNumber || addr.houseNo}, {addr.street}{addr.landmark ? `, Near ${addr.landmark}` : ''}, {addr.area || addr.locality}, {addr.city}, {addr.state} - {addr.pinCode}
+                  </p>
+                  <p className="text-[10px] text-pearl-400 font-mono">
+                    Phone: {addr.phone || addr.mobileNumber}
+                  </p>
+                </div>
+              ))
             )}
           </div>
         </div>

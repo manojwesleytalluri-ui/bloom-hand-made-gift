@@ -23,7 +23,15 @@ import {
   Sparkles,
   Lock,
   FileText,
-  BadgeCheck
+  BadgeCheck,
+  Plus,
+  Trash2,
+  Edit3,
+  Check,
+  Star,
+  Home,
+  Briefcase,
+  User
 } from 'lucide-react';
 
 // Input sanitization helper to protect against XSS
@@ -42,27 +50,46 @@ export default function CheckoutModal() {
     formatPrice,
     setIsTrackingOpen,
     addOrder,
-    activeCheckoutAddress,
-    setActiveCheckoutAddress
+    userAddresses,
+    selectedAddress,
+    selectedAddressId,
+    setSelectedAddressId,
+    addAddress,
+    editAddress,
+    removeAddress,
+    makeAddressDefault,
+    currentUser,
+    activeCheckoutAddress
   } = useApp();
 
   // Multi-step state: 1 = Address & PIN, 2 = Order Summary, 3 = Payment Method, 4 = Confirmation
   const [step, setStep] = useState(1);
 
-  // Address Form State - STARTS COMPLETELY EMPTY
+  // Address UI Modes
+  const [isFormMode, setIsFormMode] = useState(false);
+  const [editingAddressId, setEditingAddressId] = useState(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+
+  // Address Form State
   const [form, setForm] = useState({
-    fullName: activeCheckoutAddress?.fullName || '',
-    mobileNumber: activeCheckoutAddress?.mobileNumber || '',
-    email: activeCheckoutAddress?.email || '',
-    houseNo: activeCheckoutAddress?.houseNo || '',
-    street: activeCheckoutAddress?.street || '',
-    locality: activeCheckoutAddress?.locality || '',
-    landmark: activeCheckoutAddress?.landmark || '',
-    city: activeCheckoutAddress?.city || '',
-    state: activeCheckoutAddress?.state || '',
-    pinCode: activeCheckoutAddress?.pinCode || '',
+    fullName: '',
+    mobileNumber: '',
+    phone: '',
+    alternatePhone: '',
+    houseNo: '',
+    houseNumber: '',
+    street: '',
+    locality: '',
+    area: '',
+    landmark: '',
+    city: 'Bhimavaram',
+    district: 'West Godavari',
+    state: 'Andhra Pradesh',
     country: 'India',
-    deliveryInstructions: activeCheckoutAddress?.deliveryInstructions || '',
+    pinCode: '',
+    addressType: 'Home',
+    isDefault: false,
+    deliveryInstructions: ''
   });
 
   const [formErrors, setFormErrors] = useState({});
@@ -90,7 +117,100 @@ export default function CheckoutModal() {
   const [showPaytmModal, setShowPaytmModal] = useState(false);
   const [showRazorpayModal, setShowRazorpayModal] = useState(false);
 
-  // Sync form with activeCheckoutAddress and run delivery check when modal opens
+  // Sync form helper
+  const syncFormWithAddress = (addr) => {
+    if (!addr) return;
+    const fn = addr.fullName || currentUser?.fullName || '';
+    const ph = addr.phone || addr.mobileNumber || currentUser?.mobileNumber || '';
+    const hn = addr.houseNumber || addr.houseNo || '';
+    const st = addr.street || '';
+    const ar = addr.area || addr.locality || '';
+    const lm = addr.landmark || '';
+    const ct = addr.city || 'Bhimavaram';
+    const dt = addr.district || 'West Godavari';
+    const sa = addr.state || 'Andhra Pradesh';
+    const pc = addr.pinCode || '';
+    const at = addr.addressType || 'Home';
+    const def = !!addr.isDefault;
+
+    setForm({
+      fullName: fn,
+      mobileNumber: ph,
+      phone: ph,
+      alternatePhone: addr.alternatePhone || '',
+      houseNo: hn,
+      houseNumber: hn,
+      street: st,
+      locality: ar,
+      area: ar,
+      landmark: lm,
+      city: ct,
+      district: dt,
+      state: sa,
+      country: addr.country || 'India',
+      pinCode: pc,
+      addressType: at,
+      isDefault: def,
+      deliveryInstructions: form.deliveryInstructions || ''
+    });
+  };
+
+  const checkDelivery = (pin, area, city) => {
+    if (!pin && !area && !city) {
+      setPinStatus({
+        isEligible: false,
+        message: 'Please enter your PIN Code and Area / Locality to check delivery availability.',
+        estimatedTime: ''
+      });
+      return false;
+    }
+    const check = validateBhimavaramDelivery(pin, area, city);
+    setPinStatus({
+      isEligible: check.isEligible,
+      message: check.isEligible
+        ? 'Delivery is available at your address.'
+        : 'Sorry! Delivery is currently available only in Bhimavaram and surrounding service areas.',
+      estimatedTime: check.estimatedTime
+    });
+    return check.isEligible;
+  };
+
+  const resetFormToNew = () => {
+    const fn = currentUser?.fullName || '';
+    const ph = currentUser?.mobileNumber || '';
+    setForm({
+      fullName: fn,
+      mobileNumber: ph,
+      phone: ph,
+      alternatePhone: '',
+      houseNo: '',
+      houseNumber: '',
+      street: '',
+      locality: '',
+      area: '',
+      landmark: '',
+      city: 'Bhimavaram',
+      district: 'West Godavari',
+      state: 'Andhra Pradesh',
+      country: 'India',
+      pinCode: '',
+      addressType: 'Home',
+      isDefault: !userAddresses || userAddresses.length === 0,
+      deliveryInstructions: ''
+    });
+    setFormErrors({});
+    checkDelivery('', '', '');
+  };
+
+  const startEditAddress = (addr) => {
+    setEditingAddressId(addr.addressId);
+    syncFormWithAddress(addr);
+    setIsFormMode(true);
+    setFormErrors({});
+    checkDelivery(addr.pinCode, addr.area || addr.locality, addr.city);
+  };
+
+  // Sync form with activeCheckoutAddress or selectedAddress when modal opens
   useEffect(() => {
     if (isCheckoutOpen) {
       setStep(1);
@@ -98,22 +218,20 @@ export default function CheckoutModal() {
       setIsProcessing(false);
       setShowPaytmModal(false);
       setShowRazorpayModal(false);
+      setDeleteConfirmId(null);
 
-      if (form.pinCode || form.locality || form.city) {
-        const check = validateBhimavaramDelivery(form.pinCode, form.locality, form.city);
-        setPinStatus({
-          isEligible: check.isEligible,
-          message: check.isEligible
-            ? 'Delivery is available at your address.'
-            : 'Sorry! Delivery is currently available only in Bhimavaram and surrounding service areas.',
-          estimatedTime: check.estimatedTime
-        });
+      if (userAddresses && userAddresses.length > 0) {
+        setIsFormMode(false);
+        setEditingAddressId(null);
+        const sel = selectedAddress || userAddresses.find((a) => a.isDefault) || userAddresses[0];
+        if (sel) {
+          syncFormWithAddress(sel);
+          checkDelivery(sel.pinCode, sel.area || sel.locality, sel.city);
+        }
       } else {
-        setPinStatus({
-          isEligible: false,
-          message: 'Please enter your PIN Code and Area / Locality to check delivery availability.',
-          estimatedTime: ''
-        });
+        setIsFormMode(true);
+        setEditingAddressId(null);
+        resetFormToNew();
       }
     }
   }, [isCheckoutOpen]);
@@ -124,78 +242,132 @@ export default function CheckoutModal() {
   const handleInputChange = (field, value) => {
     const sanitizedVal = sanitize(value);
     const updatedForm = { ...form, [field]: sanitizedVal };
+    if (field === 'mobileNumber') updatedForm.phone = sanitizedVal;
+    if (field === 'phone') updatedForm.mobileNumber = sanitizedVal;
+    if (field === 'houseNo') updatedForm.houseNumber = sanitizedVal;
+    if (field === 'houseNumber') updatedForm.houseNo = sanitizedVal;
+    if (field === 'locality') updatedForm.area = sanitizedVal;
+    if (field === 'area') updatedForm.locality = sanitizedVal;
+
     setForm(updatedForm);
 
     if (formErrors[field]) {
       setFormErrors((prev) => ({ ...prev, [field]: '' }));
     }
 
-    if (['pinCode', 'locality', 'city', 'street'].includes(field)) {
+    if (['pinCode', 'locality', 'area', 'city', 'street'].includes(field)) {
       const cleanPin = field === 'pinCode' ? sanitizedVal : updatedForm.pinCode;
-      const cleanLocality = field === 'locality' ? sanitizedVal : updatedForm.locality;
+      const cleanArea = ['locality', 'area'].includes(field) ? sanitizedVal : (updatedForm.area || updatedForm.locality);
       const cleanCity = field === 'city' ? sanitizedVal : updatedForm.city;
 
-      if (!cleanPin && !cleanLocality && !cleanCity) {
-        setPinStatus({
-          isEligible: false,
-          message: 'Please enter your PIN Code and Area / Locality to check delivery availability.',
-          estimatedTime: ''
-        });
-      } else {
-        const check = validateBhimavaramDelivery(cleanPin, cleanLocality, cleanCity);
-        setPinStatus({
-          isEligible: check.isEligible,
-          message: check.isEligible
-            ? 'Delivery is available at your address.'
-            : 'Sorry! Delivery is currently available only in Bhimavaram and surrounding service areas.',
-          estimatedTime: check.estimatedTime
-        });
-
-        if (check.isEligible) {
-          setForm((prev) => ({
-            ...prev,
-            city: prev.city || 'Bhimavaram',
-            state: prev.state || 'Andhra Pradesh'
-          }));
-        }
-      }
+      checkDelivery(cleanPin, cleanArea, cleanCity);
     }
   };
 
-  // Validate Shipping Address Form
-  const validateForm = () => {
+  // Select address & check delivery
+  const handleSelectAndDeliver = (addr) => {
+    setSelectedAddressId(addr.addressId);
+    syncFormWithAddress(addr);
+    const check = validateBhimavaramDelivery(addr.pinCode, addr.area || addr.locality, addr.city);
+    setPinStatus({
+      isEligible: check.isEligible,
+      message: check.isEligible
+        ? 'Delivery is available at your address.'
+        : 'Sorry! Delivery is currently available only in Bhimavaram and surrounding service areas.',
+      estimatedTime: check.estimatedTime
+    });
+    if (check.isEligible) {
+      setStep(2);
+    }
+  };
+
+  // Validate and Save Address
+  const handleSaveAddressSubmit = (e) => {
+    if (e) e.preventDefault();
     const errors = {};
     if (!form.fullName.trim()) errors.fullName = 'Full Name is required';
-    if (!form.mobileNumber.trim()) {
+    const cleanPhone = (form.phone || form.mobileNumber || '').trim();
+    if (!cleanPhone) {
       errors.mobileNumber = 'Mobile Number is required';
-    } else if (!/^[6-9]\d{9}$/.test(form.mobileNumber.trim())) {
-      errors.mobileNumber = 'Enter a valid 10-digit Indian mobile number';
+    } else if (!/^[6-9]\d{9}$/.test(cleanPhone)) {
+      errors.mobileNumber = 'Enter a valid 10-digit mobile number';
     }
 
-    if (form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
-      errors.email = 'Enter a valid email address';
-    }
+    const cleanHouse = (form.houseNumber || form.houseNo || '').trim();
+    if (!cleanHouse) errors.houseNo = 'House / Flat Number is required';
 
-    if (!form.houseNo.trim()) errors.houseNo = 'House / Flat Number is required';
     if (!form.street.trim()) errors.street = 'Street / Road is required';
-    if (!form.locality.trim()) errors.locality = 'Area / Locality is required';
-    if (!form.city.trim()) errors.city = 'City / Town is required';
-    if (!form.state.trim()) errors.state = 'State is required';
-    if (!form.pinCode.trim()) errors.pinCode = 'PIN Code is required';
 
-    const check = validateBhimavaramDelivery(form.pinCode, form.locality, form.city);
+    const cleanArea = (form.area || form.locality || '').trim();
+    if (!cleanArea) errors.locality = 'Area / Locality is required';
+
+    if (!form.city.trim()) errors.city = 'City is required';
+    if (!form.state.trim()) errors.state = 'State is required';
+
+    const cleanPin = form.pinCode.trim();
+    if (!cleanPin) {
+      errors.pinCode = 'PIN Code is required';
+    } else if (!/^\d{6}$/.test(cleanPin)) {
+      errors.pinCode = 'Enter a valid 6-digit PIN Code';
+    }
+
+    const check = validateBhimavaramDelivery(cleanPin, cleanArea, form.city);
     if (!check.isEligible) {
       errors.pinCode = 'Delivery is not available at this address.';
     }
 
     setFormErrors(errors);
-    return Object.keys(errors).length === 0 && check.isEligible;
+
+    if (Object.keys(errors).length > 0 || !check.isEligible) {
+      return;
+    }
+
+    const addressPayload = {
+      fullName: form.fullName.trim(),
+      phone: cleanPhone,
+      mobileNumber: cleanPhone,
+      alternatePhone: (form.alternatePhone || '').trim(),
+      houseNumber: cleanHouse,
+      houseNo: cleanHouse,
+      street: form.street.trim(),
+      landmark: (form.landmark || '').trim(),
+      area: cleanArea,
+      locality: cleanArea,
+      city: form.city.trim(),
+      district: (form.district || '').trim(),
+      state: form.state.trim(),
+      country: form.country || 'India',
+      pinCode: cleanPin,
+      addressType: form.addressType || 'Home',
+      isDefault: form.isDefault || (!userAddresses || userAddresses.length === 0)
+    };
+
+    let result;
+    if (editingAddressId) {
+      result = editAddress(editingAddressId, addressPayload);
+    } else {
+      result = addAddress(addressPayload);
+    }
+
+    if (result && result.success) {
+      setIsFormMode(false);
+      setEditingAddressId(null);
+      if (check.isEligible) {
+        setStep(2);
+      }
+    }
   };
 
   const handleNextFromAddress = () => {
-    if (!validateForm()) return;
-    setActiveCheckoutAddress(form);
-    setStep(2);
+    if (isFormMode || !userAddresses || userAddresses.length === 0) {
+      handleSaveAddressSubmit();
+    } else {
+      if (selectedAddress) {
+        handleSelectAndDeliver(selectedAddress);
+      } else if (userAddresses.length > 0) {
+        handleSelectAndDeliver(userAddresses[0]);
+      }
+    }
   };
 
   // Confetti Animation Trigger
@@ -414,259 +586,478 @@ export default function CheckoutModal() {
         </div>
 
         {/* ========================================================= */}
-        {/* STEP 1: MANUAL SHIPPING ADDRESS FORM                       */}
+        {/* STEP 1: PERSISTENT SAVED ADDRESSES & FORM                 */}
         {/* ========================================================= */}
         {step === 1 && (
-          <div className="space-y-4 animate-fadeIn">
-            <div className="flex items-center justify-between">
-              <h3 className="font-serif font-bold text-base sm:text-lg text-pearl-50 flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-gold-400" />
-                <span>Enter Recipient Delivery Address</span>
-              </h3>
-              <span className="text-[11px] text-pearl-400">* Required Fields</span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              <div>
-                <label className="text-pearl-300 block mb-1 font-medium">Full Name *</label>
-                <input
-                  type="text"
-                  placeholder="Enter full name"
-                  value={form.fullName}
-                  onChange={(e) => handleInputChange('fullName', e.target.value)}
-                  className={`w-full bg-obsidian-900 border ${
-                    formErrors.fullName ? 'border-red-500' : 'border-gold-500/30'
-                  } rounded-xl p-3 text-pearl-100 outline-none focus:border-gold-400 transition-colors`}
-                />
-                {formErrors.fullName && <p className="text-[10px] text-red-400 mt-1">{formErrors.fullName}</p>}
-              </div>
-
-              <div>
-                <label className="text-pearl-300 block mb-1 font-medium">Mobile Number *</label>
-                <input
-                  type="tel"
-                  maxLength={10}
-                  placeholder="Enter 10-digit mobile number"
-                  value={form.mobileNumber}
-                  onChange={(e) => handleInputChange('mobileNumber', e.target.value)}
-                  className={`w-full bg-obsidian-900 border ${
-                    formErrors.mobileNumber ? 'border-red-500' : 'border-gold-500/30'
-                  } rounded-xl p-3 text-pearl-100 outline-none focus:border-gold-400 transition-colors`}
-                />
-                {formErrors.mobileNumber && <p className="text-[10px] text-red-400 mt-1">{formErrors.mobileNumber}</p>}
-              </div>
-
-              <div>
-                <label className="text-pearl-300 block mb-1 font-medium">Email Address (Optional)</label>
-                <input
-                  type="email"
-                  placeholder="Enter email address"
-                  value={form.email}
-                  onChange={(e) => handleInputChange('email', e.target.value)}
-                  className={`w-full bg-obsidian-900 border ${
-                    formErrors.email ? 'border-red-500' : 'border-gold-500/30'
-                  } rounded-xl p-3 text-pearl-100 outline-none focus:border-gold-400 transition-colors`}
-                />
-                {formErrors.email && <p className="text-[10px] text-red-400 mt-1">{formErrors.email}</p>}
-              </div>
-
-              <div>
-                <label className="text-pearl-300 block mb-1 font-medium">House / Flat Number *</label>
-                <input
-                  type="text"
-                  placeholder="Enter house or flat number"
-                  value={form.houseNo}
-                  onChange={(e) => handleInputChange('houseNo', e.target.value)}
-                  className={`w-full bg-obsidian-900 border ${
-                    formErrors.houseNo ? 'border-red-500' : 'border-gold-500/30'
-                  } rounded-xl p-3 text-pearl-100 outline-none focus:border-gold-400 transition-colors`}
-                />
-                {formErrors.houseNo && <p className="text-[10px] text-red-400 mt-1">{formErrors.houseNo}</p>}
-              </div>
-
-              <div>
-                <label className="text-pearl-300 block mb-1 font-medium">Street / Road *</label>
-                <input
-                  type="text"
-                  placeholder="Enter street or road name"
-                  value={form.street}
-                  onChange={(e) => handleInputChange('street', e.target.value)}
-                  className={`w-full bg-obsidian-900 border ${
-                    formErrors.street ? 'border-red-500' : 'border-gold-500/30'
-                  } rounded-xl p-3 text-pearl-100 outline-none focus:border-gold-400 transition-colors`}
-                />
-                {formErrors.street && <p className="text-[10px] text-red-400 mt-1">{formErrors.street}</p>}
-              </div>
-
-              <div>
-                <label className="text-pearl-300 block mb-1 font-medium">Area / Locality *</label>
-                <input
-                  type="text"
-                  placeholder="Enter area or locality name"
-                  value={form.locality}
-                  onChange={(e) => handleInputChange('locality', e.target.value)}
-                  className={`w-full bg-obsidian-900 border ${
-                    form.locality && !pinStatus.isEligible
-                      ? 'border-red-500 text-red-200'
-                      : form.locality && pinStatus.isEligible
-                      ? 'border-emerald-500 text-emerald-200'
-                      : formErrors.locality
-                      ? 'border-red-500'
-                      : 'border-gold-500/30'
-                  } rounded-xl p-3 text-pearl-100 outline-none focus:border-gold-400 transition-colors`}
-                />
-                {formErrors.locality && <p className="text-[10px] text-red-400 mt-1">{formErrors.locality}</p>}
-              </div>
-
-              <div>
-                <label className="text-pearl-300 block mb-1 font-medium">Landmark (Optional)</label>
-                <input
-                  type="text"
-                  placeholder="Enter nearby landmark"
-                  value={form.landmark}
-                  onChange={(e) => handleInputChange('landmark', e.target.value)}
-                  className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-3 text-pearl-100 outline-none focus:border-gold-400 transition-colors"
-                />
-              </div>
-
-              <div>
-                <label className="text-pearl-200 font-bold block mb-1">PIN Code *</label>
-                <input
-                  type="text"
-                  maxLength={6}
-                  placeholder="Enter 6-digit PIN code"
-                  value={form.pinCode}
-                  onChange={(e) => handleInputChange('pinCode', e.target.value)}
-                  className={`w-full bg-obsidian-900 border ${
-                    form.pinCode && !pinStatus.isEligible
-                      ? 'border-red-500 text-red-300 font-bold'
-                      : form.pinCode && pinStatus.isEligible
-                      ? 'border-emerald-500 text-emerald-300 font-bold'
-                      : formErrors.pinCode
-                      ? 'border-red-500'
-                      : 'border-gold-500/30'
-                  } rounded-xl p-3 text-pearl-100 outline-none focus:border-gold-400 transition-colors`}
-                />
-                {formErrors.pinCode && <p className="text-[10px] text-red-400 mt-1">{formErrors.pinCode}</p>}
-              </div>
-
-              <div>
-                <label className="text-pearl-300 block mb-1 font-medium">City / Town *</label>
-                <input
-                  type="text"
-                  placeholder="Enter city or town"
-                  value={form.city}
-                  onChange={(e) => handleInputChange('city', e.target.value)}
-                  className={`w-full bg-obsidian-900 border ${
-                    formErrors.city ? 'border-red-500' : 'border-gold-500/30'
-                  } rounded-xl p-3 text-pearl-100 outline-none focus:border-gold-400 transition-colors`}
-                />
-                {formErrors.city && <p className="text-[10px] text-red-400 mt-1">{formErrors.city}</p>}
-              </div>
-
-              <div>
-                <label className="text-pearl-300 block mb-1 font-medium">State *</label>
-                <input
-                  type="text"
-                  placeholder="Enter state"
-                  value={form.state}
-                  onChange={(e) => handleInputChange('state', e.target.value)}
-                  className={`w-full bg-obsidian-900 border ${
-                    formErrors.state ? 'border-red-500' : 'border-gold-500/30'
-                  } rounded-xl p-3 text-pearl-100 outline-none focus:border-gold-400 transition-colors`}
-                />
-                {formErrors.state && <p className="text-[10px] text-red-400 mt-1">{formErrors.state}</p>}
-              </div>
-
-              <div className="sm:col-span-2">
-                <label className="text-pearl-300 block mb-1 font-medium flex items-center gap-1.5">
-                  <FileText className="w-3.5 h-3.5 text-gold-400" />
-                  <span>Delivery Instructions (Optional)</span>
-                </label>
-                <textarea
-                  rows={2}
-                  placeholder="Enter any special delivery notes or gate entry codes"
-                  value={form.deliveryInstructions}
-                  onChange={(e) => handleInputChange('deliveryInstructions', e.target.value)}
-                  className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-3 text-pearl-100 outline-none focus:border-gold-400 transition-colors text-xs resize-none"
-                />
-              </div>
-
-              {/* Live Delivery Eligibility Banner */}
-              <div className="sm:col-span-2 p-3.5 rounded-2xl bg-obsidian-900/90 border border-gold-500/20 space-y-2">
-                <div
-                  className={`p-3.5 rounded-xl border flex items-start gap-2.5 text-xs transition-colors ${
-                    pinStatus.isEligible
-                      ? 'bg-emerald-950/70 border-emerald-500/50 text-emerald-300'
-                      : form.pinCode || form.locality
-                      ? 'bg-red-950/70 border-red-500/50 text-red-300'
-                      : 'bg-obsidian-950 border-gold-500/20 text-pearl-300'
-                  }`}
-                >
-                  {pinStatus.isEligible ? (
-                    <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
-                  ) : form.pinCode || form.locality ? (
-                    <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-                  ) : (
-                    <MapPin className="w-5 h-5 text-gold-400 flex-shrink-0 mt-0.5" />
-                  )}
+          <div className="space-y-5 animate-fadeIn">
+            
+            {/* View Mode 1: Saved Addresses List Cards */}
+            {!isFormMode && userAddresses && userAddresses.length > 0 ? (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-bold text-xs sm:text-sm">{pinStatus.message}</p>
-                    {pinStatus.isEligible && (
-                      <p className="text-[11px] text-emerald-200/90 mt-0.5 font-serif">
-                        🚀 {pinStatus.estimatedTime || 'Same-Day Hand Delivery in 45-90 Minutes.'}
-                      </p>
-                    )}
+                    <h3 className="font-serif font-bold text-base sm:text-lg text-pearl-50 flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-gold-400" />
+                      <span>Select Delivery Address</span>
+                    </h3>
+                    <p className="text-[11px] text-pearl-300">
+                      Choose from your saved addresses or add a new one.
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingAddressId(null);
+                      resetFormToNew();
+                      setIsFormMode(true);
+                    }}
+                    className="px-3.5 py-1.5 rounded-full bg-gold-500/10 border border-gold-500/30 text-gold-300 text-xs font-serif font-bold hover:bg-gold-500/20 transition-all flex items-center gap-1.5 shrink-0"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add New Address</span>
+                  </button>
+                </div>
+
+                {/* Cards List */}
+                <div className="grid grid-cols-1 gap-3 max-h-80 overflow-y-auto pr-1">
+                  {userAddresses.map((addr) => {
+                    const isSelected = selectedAddressId === addr.addressId || (selectedAddress?.addressId === addr.addressId);
+                    return (
+                      <div
+                        key={addr.addressId}
+                        onClick={() => handleSelectAndDeliver(addr)}
+                        className={`p-4 rounded-2xl border transition-all cursor-pointer relative space-y-2.5 ${
+                          isSelected
+                            ? 'bg-obsidian-900 border-gold-400 shadow-gold-sm ring-1 ring-gold-400/50'
+                            : 'bg-obsidian-900/60 border-gold-500/20 hover:border-gold-500/40'
+                        }`}
+                      >
+                        {/* Top Badges & Selector */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div
+                              className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                                isSelected ? 'border-gold-400 bg-gold-500/20' : 'border-pearl-500/40'
+                              }`}
+                            >
+                              {isSelected && <div className="w-2 h-2 rounded-full bg-gold-400" />}
+                            </div>
+
+                            <span className="font-serif font-bold text-sm text-pearl-50">
+                              {addr.fullName}
+                            </span>
+
+                            {/* Address Type Badge */}
+                            <span className="px-2 py-0.5 rounded-md bg-gold-500/10 border border-gold-500/20 text-gold-300 text-[10px] uppercase font-bold tracking-wider flex items-center gap-1">
+                              {addr.addressType === 'Office' ? (
+                                <Briefcase className="w-3 h-3 text-gold-400" />
+                              ) : (
+                                <Home className="w-3 h-3 text-gold-400" />
+                              )}
+                              <span>{addr.addressType || 'Home'}</span>
+                            </span>
+
+                            {/* Default Badge */}
+                            {addr.isDefault && (
+                              <span className="px-2 py-0.5 rounded-md bg-emerald-950 border border-emerald-500/40 text-emerald-300 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
+                                <Check className="w-3 h-3" />
+                                <span>Default</span>
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Quick Action Buttons */}
+                          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                            {!addr.isDefault && (
+                              <button
+                                type="button"
+                                onClick={() => makeAddressDefault(addr.addressId)}
+                                className="p-1.5 rounded-lg bg-obsidian-950 border border-gold-500/20 text-pearl-300 hover:text-gold-400 text-[11px] transition-colors"
+                                title="Set as Default Address"
+                              >
+                                <Star className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+
+                            <button
+                              type="button"
+                              onClick={() => startEditAddress(addr)}
+                              className="p-1.5 rounded-lg bg-obsidian-950 border border-gold-500/20 text-pearl-300 hover:text-gold-400 text-[11px] transition-colors flex items-center gap-1 px-2"
+                              title="Edit Address"
+                            >
+                              <Edit3 className="w-3.5 h-3.5" />
+                              <span className="hidden sm:inline">Edit</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => setDeleteConfirmId(addr.addressId)}
+                              className="p-1.5 rounded-lg bg-obsidian-950 border border-red-500/30 text-red-400 hover:bg-red-500/10 text-[11px] transition-colors"
+                              title="Delete Address"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Address Details */}
+                        <div className="text-xs text-pearl-200/90 font-light space-y-1 pl-6">
+                          <p>
+                            {addr.houseNumber || addr.houseNo}, {addr.street}
+                            {addr.landmark ? `, Near ${addr.landmark}` : ''}
+                          </p>
+                          <p>
+                            {addr.area || addr.locality}, {addr.city}, {addr.state} -{' '}
+                            <strong className="text-gold-300 font-mono">{addr.pinCode}</strong>
+                          </p>
+                          <p className="text-[11px] text-pearl-400 font-mono">
+                            📞 Phone: {addr.phone || addr.mobileNumber}
+                            {addr.alternatePhone ? ` | Alt: ${addr.alternatePhone}` : ''}
+                          </p>
+                        </div>
+
+                        {/* Deliver Here Button for Selected Card */}
+                        {isSelected && (
+                          <div className="pt-2 pl-6 flex items-center justify-between border-t border-gold-500/15">
+                            <span className="text-[10px] text-emerald-400 font-serif font-bold uppercase tracking-wider flex items-center gap-1">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                              <span>Selected for Delivery</span>
+                            </span>
+
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSelectAndDeliver(addr);
+                              }}
+                              className="px-4 py-1.5 rounded-full bg-gold-gradient text-obsidian-950 font-serif font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-gold-sm hover:scale-105 transition-all"
+                            >
+                              <span>Deliver Here</span>
+                              <ArrowRight className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Delivery Time & Slot Selection */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-xs">
+                  <div>
+                    <label className="text-pearl-300 block mb-1 font-medium">Preferred Delivery Date:</label>
+                    <input
+                      type="date"
+                      value={deliveryDate}
+                      min={new Date().toISOString().split('T')[0]}
+                      onChange={(e) => setDeliveryDate(e.target.value)}
+                      className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-2.5 text-pearl-100 outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-pearl-300 block mb-1 font-medium">Express Time Slot:</label>
+                    <select
+                      value={timeSlot}
+                      onChange={(e) => setTimeSlot(e.target.value)}
+                      className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-2.5 text-pearl-100 outline-none"
+                    >
+                      <option>VIP 2-Hour Express (14:00 - 16:00)</option>
+                      <option>Morning Fresh Flowers (09:00 - 11:00)</option>
+                      <option>Evening Sunset Hand Delivery (18:00 - 20:00)</option>
+                    </select>
                   </div>
                 </div>
               </div>
+            ) : (
+              /* View Mode 2: Add / Edit Address Form */
+              <form onSubmit={handleSaveAddressSubmit} className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-serif font-bold text-base sm:text-lg text-pearl-50 flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-gold-400" />
+                    <span>{editingAddressId ? 'Edit Delivery Address' : 'Add New Delivery Address'}</span>
+                  </h3>
 
-              <div>
-                <label className="text-pearl-300 block mb-1 font-medium">Preferred Hand-Delivery Date:</label>
-                <input
-                  type="date"
-                  value={deliveryDate}
-                  min={new Date().toISOString().split('T')[0]}
-                  onChange={(e) => setDeliveryDate(e.target.value)}
-                  className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-2.5 text-pearl-100 outline-none"
-                />
-              </div>
+                  {userAddresses && userAddresses.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsFormMode(false);
+                        setEditingAddressId(null);
+                      }}
+                      className="text-xs text-gold-400 hover:underline font-serif"
+                    >
+                      ← Back to Saved Addresses
+                    </button>
+                  )}
+                </div>
 
-              <div>
-                <label className="text-pearl-300 block mb-1 font-medium">Express Slot:</label>
-                <select
-                  value={timeSlot}
-                  onChange={(e) => setTimeSlot(e.target.value)}
-                  className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-2.5 text-pearl-100 outline-none"
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <label className="text-pearl-300 block mb-1 font-medium">Full Name *</label>
+                    <input
+                      type="text"
+                      placeholder="Enter full name"
+                      value={form.fullName}
+                      onChange={(e) => handleInputChange('fullName', e.target.value)}
+                      className={`w-full bg-obsidian-900 border ${
+                        formErrors.fullName ? 'border-red-500' : 'border-gold-500/30'
+                      } rounded-xl p-3 text-pearl-100 outline-none focus:border-gold-400 transition-colors`}
+                    />
+                    {formErrors.fullName && <p className="text-[10px] text-red-400 mt-1">{formErrors.fullName}</p>}
+                  </div>
+
+                  <div>
+                    <label className="text-pearl-300 block mb-1 font-medium">Mobile Number *</label>
+                    <input
+                      type="tel"
+                      maxLength={10}
+                      placeholder="Enter 10-digit mobile number"
+                      value={form.mobileNumber || form.phone}
+                      onChange={(e) => handleInputChange('mobileNumber', e.target.value)}
+                      className={`w-full bg-obsidian-900 border ${
+                        formErrors.mobileNumber ? 'border-red-500' : 'border-gold-500/30'
+                      } rounded-xl p-3 text-pearl-100 outline-none focus:border-gold-400 transition-colors`}
+                    />
+                    {formErrors.mobileNumber && <p className="text-[10px] text-red-400 mt-1">{formErrors.mobileNumber}</p>}
+                  </div>
+
+                  <div>
+                    <label className="text-pearl-300 block mb-1 font-medium">Alternate Mobile (Optional)</label>
+                    <input
+                      type="tel"
+                      maxLength={10}
+                      placeholder="Alternate contact number"
+                      value={form.alternatePhone}
+                      onChange={(e) => handleInputChange('alternatePhone', e.target.value)}
+                      className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-3 text-pearl-100 outline-none focus:border-gold-400 transition-colors"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-pearl-300 block mb-1 font-medium">House / Flat Number *</label>
+                    <input
+                      type="text"
+                      placeholder="Flat 202 / House No. 14"
+                      value={form.houseNo || form.houseNumber}
+                      onChange={(e) => handleInputChange('houseNo', e.target.value)}
+                      className={`w-full bg-obsidian-900 border ${
+                        formErrors.houseNo ? 'border-red-500' : 'border-gold-500/30'
+                      } rounded-xl p-3 text-pearl-100 outline-none focus:border-gold-400 transition-colors`}
+                    />
+                    {formErrors.houseNo && <p className="text-[10px] text-red-400 mt-1">{formErrors.houseNo}</p>}
+                  </div>
+
+                  <div>
+                    <label className="text-pearl-300 block mb-1 font-medium">Street / Road *</label>
+                    <input
+                      type="text"
+                      placeholder="Street name or main road"
+                      value={form.street}
+                      onChange={(e) => handleInputChange('street', e.target.value)}
+                      className={`w-full bg-obsidian-900 border ${
+                        formErrors.street ? 'border-red-500' : 'border-gold-500/30'
+                      } rounded-xl p-3 text-pearl-100 outline-none focus:border-gold-400 transition-colors`}
+                    />
+                    {formErrors.street && <p className="text-[10px] text-red-400 mt-1">{formErrors.street}</p>}
+                  </div>
+
+                  <div>
+                    <label className="text-pearl-300 block mb-1 font-medium">Area / Locality *</label>
+                    <input
+                      type="text"
+                      placeholder="Colony, layout, or area name"
+                      value={form.locality || form.area}
+                      onChange={(e) => handleInputChange('locality', e.target.value)}
+                      className={`w-full bg-obsidian-900 border ${
+                        formErrors.locality ? 'border-red-500' : 'border-gold-500/30'
+                      } rounded-xl p-3 text-pearl-100 outline-none focus:border-gold-400 transition-colors`}
+                    />
+                    {formErrors.locality && <p className="text-[10px] text-red-400 mt-1">{formErrors.locality}</p>}
+                  </div>
+
+                  <div>
+                    <label className="text-pearl-300 block mb-1 font-medium">Landmark (Optional)</label>
+                    <input
+                      type="text"
+                      placeholder="Near Bus Stand, Bank, etc."
+                      value={form.landmark}
+                      onChange={(e) => handleInputChange('landmark', e.target.value)}
+                      className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-3 text-pearl-100 outline-none focus:border-gold-400 transition-colors"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-pearl-200 font-bold block mb-1">PIN Code *</label>
+                    <input
+                      type="text"
+                      maxLength={6}
+                      placeholder="6-digit PIN code (e.g. 534201)"
+                      value={form.pinCode}
+                      onChange={(e) => handleInputChange('pinCode', e.target.value)}
+                      className={`w-full bg-obsidian-900 border ${
+                        form.pinCode && !pinStatus.isEligible
+                          ? 'border-red-500 text-red-300 font-bold'
+                          : form.pinCode && pinStatus.isEligible
+                          ? 'border-emerald-500 text-emerald-300 font-bold'
+                          : formErrors.pinCode
+                          ? 'border-red-500'
+                          : 'border-gold-500/30'
+                      } rounded-xl p-3 text-pearl-100 outline-none focus:border-gold-400 transition-colors`}
+                    />
+                    {formErrors.pinCode && <p className="text-[10px] text-red-400 mt-1">{formErrors.pinCode}</p>}
+                  </div>
+
+                  <div>
+                    <label className="text-pearl-300 block mb-1 font-medium">City / Town *</label>
+                    <input
+                      type="text"
+                      placeholder="Bhimavaram"
+                      value={form.city}
+                      onChange={(e) => handleInputChange('city', e.target.value)}
+                      className={`w-full bg-obsidian-900 border ${
+                        formErrors.city ? 'border-red-500' : 'border-gold-500/30'
+                      } rounded-xl p-3 text-pearl-100 outline-none focus:border-gold-400 transition-colors`}
+                    />
+                    {formErrors.city && <p className="text-[10px] text-red-400 mt-1">{formErrors.city}</p>}
+                  </div>
+
+                  <div>
+                    <label className="text-pearl-300 block mb-1 font-medium">State *</label>
+                    <input
+                      type="text"
+                      placeholder="Andhra Pradesh"
+                      value={form.state}
+                      onChange={(e) => handleInputChange('state', e.target.value)}
+                      className={`w-full bg-obsidian-900 border ${
+                        formErrors.state ? 'border-red-500' : 'border-gold-500/30'
+                      } rounded-xl p-3 text-pearl-100 outline-none focus:border-gold-400 transition-colors`}
+                    />
+                    {formErrors.state && <p className="text-[10px] text-red-400 mt-1">{formErrors.state}</p>}
+                  </div>
+
+                  {/* Address Type Selector */}
+                  <div className="sm:col-span-2">
+                    <label className="text-pearl-300 block mb-1.5 font-medium">Address Type</label>
+                    <div className="flex items-center gap-3">
+                      {['Home', 'Office', 'Other'].map((type) => (
+                        <button
+                          key={type}
+                          type="button"
+                          onClick={() => setForm((prev) => ({ ...prev, addressType: type }))}
+                          className={`flex-1 py-2 rounded-xl text-xs font-serif font-bold uppercase tracking-wider border transition-all flex items-center justify-center gap-1.5 ${
+                            form.addressType === type
+                              ? 'bg-gold-gradient text-obsidian-950 border-gold-400 shadow-gold-sm'
+                              : 'bg-obsidian-900 text-pearl-300 border-gold-500/20 hover:border-gold-500/40'
+                          }`}
+                        >
+                          {type === 'Home' && <Home className="w-3.5 h-3.5" />}
+                          {type === 'Office' && <Briefcase className="w-3.5 h-3.5" />}
+                          <span>{type}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Default Checkbox */}
+                  <div className="sm:col-span-2 flex items-center gap-2 pt-1">
+                    <input
+                      type="checkbox"
+                      id="isDefaultCheck"
+                      checked={form.isDefault}
+                      onChange={(e) => setForm((prev) => ({ ...prev, isDefault: e.target.checked }))}
+                      className="w-4 h-4 rounded accent-gold-500 bg-obsidian-900 border-gold-500/30 cursor-pointer"
+                    />
+                    <label htmlFor="isDefaultCheck" className="text-xs text-pearl-200 cursor-pointer">
+                      Make this my default delivery address
+                    </label>
+                  </div>
+                </div>
+
+                {/* Delivery Eligibility Banner */}
+                <div className="p-3.5 rounded-2xl bg-obsidian-900/90 border border-gold-500/20 space-y-2">
+                  <div
+                    className={`p-3 rounded-xl border flex items-start gap-2.5 text-xs transition-colors ${
+                      pinStatus.isEligible
+                        ? 'bg-emerald-950/70 border-emerald-500/50 text-emerald-300'
+                        : form.pinCode || form.locality
+                        ? 'bg-red-950/70 border-red-500/50 text-red-300'
+                        : 'bg-obsidian-950 border-gold-500/20 text-pearl-300'
+                    }`}
+                  >
+                    {pinStatus.isEligible ? (
+                      <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+                    ) : form.pinCode || form.locality ? (
+                      <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                    ) : (
+                      <MapPin className="w-5 h-5 text-gold-400 flex-shrink-0 mt-0.5" />
+                    )}
+                    <div>
+                      <p className="font-bold text-xs sm:text-sm">{pinStatus.message}</p>
+                      {pinStatus.isEligible && (
+                        <p className="text-[11px] text-emerald-200/90 mt-0.5 font-serif">
+                          🚀 {pinStatus.estimatedTime || 'Same-Day Hand Delivery in 45-90 Minutes.'}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Form Buttons */}
+                <div className="pt-2 flex items-center justify-between border-t border-gold-500/20">
+                  {userAddresses && userAddresses.length > 0 ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsFormMode(false);
+                        setEditingAddressId(null);
+                      }}
+                      className="px-5 py-2.5 rounded-full border border-gold-500/30 text-pearl-300 text-xs font-serif hover:bg-gold-500/10 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  ) : (
+                    <div />
+                  )}
+
+                  <button
+                    type="submit"
+                    className="px-6 py-3 rounded-full bg-gold-gradient text-obsidian-950 font-serif font-bold text-xs uppercase tracking-widest flex items-center gap-2 shadow-gold-sm hover:scale-[1.02] transition-all"
+                  >
+                    <span>Save Address & Continue</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* Bottom Total & Continue Bar when on Cards View */}
+            {!isFormMode && userAddresses && userAddresses.length > 0 && (
+              <div className="pt-4 flex items-center justify-between border-t border-gold-500/20">
+                <div>
+                  <span className="text-[10px] text-pearl-400 uppercase tracking-widest block">Total Investment</span>
+                  <span className="font-serif font-bold text-xl text-gold-gradient">
+                    {formatPrice(cartTotalUSD || 450)}
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleNextFromAddress}
+                  disabled={!pinStatus.isEligible}
+                  className={`px-6 py-3 rounded-full font-serif font-bold text-xs uppercase tracking-widest flex items-center gap-2 transition-all ${
+                    pinStatus.isEligible
+                      ? 'bg-gold-gradient text-obsidian-950 shadow-gold-sm hover:scale-[1.02]'
+                      : 'bg-obsidian-900 border border-red-500/40 text-red-400 cursor-not-allowed opacity-60'
+                  }`}
                 >
-                  <option>VIP 2-Hour Express (14:00 - 16:00)</option>
-                  <option>Morning Fresh Flowers (09:00 - 11:00)</option>
-                  <option>Evening Sunset Hand Delivery (18:00 - 20:00)</option>
-                </select>
+                  <span>{pinStatus.isEligible ? 'Deliver Here' : 'Delivery Not Available'}</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
               </div>
-            </div>
+            )}
 
-            <div className="pt-4 flex items-center justify-between border-t border-gold-500/20">
-              <div>
-                <span className="text-[10px] text-pearl-400 uppercase tracking-widest block">Total Investment</span>
-                <span className="font-serif font-bold text-xl text-gold-gradient">
-                  {formatPrice(cartTotalUSD || 450)}
-                </span>
-              </div>
-
-              <button
-                onClick={handleNextFromAddress}
-                disabled={!pinStatus.isEligible}
-                className={`px-6 py-3 rounded-full font-serif font-bold text-xs uppercase tracking-widest flex items-center gap-2 transition-all ${
-                  pinStatus.isEligible
-                    ? 'bg-gold-gradient text-obsidian-950 shadow-gold-sm hover:scale-[1.02]'
-                    : 'bg-obsidian-900 border border-red-500/40 text-red-400 cursor-not-allowed opacity-60'
-                }`}
-              >
-                <span>{pinStatus.isEligible ? 'Continue to Summary' : 'Delivery Not Available'}</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
           </div>
         )}
 
@@ -1152,6 +1543,43 @@ export default function CheckoutModal() {
                   <span>(Close Popup)</span>
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Address Confirmation Dialog */}
+      {deleteConfirmId && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-obsidian-950/85 backdrop-blur-md animate-fadeIn">
+          <div className="glass-panel border border-gold-500/40 rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-gold-lg text-center my-auto">
+            <div className="w-12 h-12 rounded-full bg-red-500/20 border border-red-500/40 flex items-center justify-center mx-auto text-red-400">
+              <Trash2 className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="font-serif font-bold text-lg text-pearl-50">Delete Address?</h3>
+              <p className="text-xs text-pearl-300 mt-1">
+                Are you sure you want to delete this delivery address from your saved address collection?
+              </p>
+            </div>
+
+            <div className="flex items-center justify-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirmId(null)}
+                className="px-5 py-2 rounded-full border border-gold-500/30 text-pearl-300 text-xs font-serif hover:bg-gold-500/10 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  removeAddress(deleteConfirmId);
+                  setDeleteConfirmId(null);
+                }}
+                className="px-5 py-2 rounded-full bg-red-600 hover:bg-red-500 text-white text-xs font-serif font-bold shadow-md transition-colors"
+              >
+                Delete
+              </button>
             </div>
           </div>
         </div>

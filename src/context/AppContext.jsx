@@ -2,6 +2,14 @@ import React, { createContext, useContext, useState, useEffect, useRef } from 'r
 import { PRODUCTS } from '../data/products';
 import { assetPath } from '../utils/assetPath';
 import { fetchCloudProducts, saveCloudProducts } from '../services/cloudProductsDb';
+import {
+  getAddresses,
+  getDefaultAddress,
+  saveAddress,
+  updateAddress,
+  deleteAddress,
+  setDefaultAddress
+} from '../services/addressService';
 
 const AppContext = createContext();
 
@@ -220,11 +228,113 @@ export const AppProvider = ({ children }) => {
     return [];
   });
 
-  // Saved Shipping Address State (Starts completely empty)
-  const [activeCheckoutAddress, setActiveCheckoutAddress] = useState({
+  // Persistent User Addresses State & Management
+  const [userAddresses, setUserAddresses] = useState(() => {
+    const savedSession = localStorage.getItem('bloom_auth_session');
+    if (savedSession) {
+      try {
+        const user = JSON.parse(savedSession);
+        return getAddresses(user.email);
+      } catch (e) {}
+    }
+    return [];
+  });
+
+  const [selectedAddressId, setSelectedAddressId] = useState(() => {
+    const savedSession = localStorage.getItem('bloom_auth_session');
+    if (savedSession) {
+      try {
+        const user = JSON.parse(savedSession);
+        const def = getDefaultAddress(user.email);
+        return def ? def.addressId : null;
+      } catch (e) {}
+    }
+    return null;
+  });
+
+  // Selected address helper
+  const selectedAddress = userAddresses.find((a) => a.addressId === selectedAddressId) ||
+    userAddresses.find((a) => a.isDefault) ||
+    userAddresses[0] ||
+    null;
+
+  // Sync / Reload user addresses
+  const loadUserAddresses = (userEmail) => {
+    const email = userEmail || currentUser?.email;
+    if (!email) {
+      setUserAddresses([]);
+      setSelectedAddressId(null);
+      return;
+    }
+    const list = getAddresses(email);
+    setUserAddresses(list);
+    const def = getDefaultAddress(email);
+    setSelectedAddressId(def ? def.addressId : (list[0]?.addressId || null));
+  };
+
+  // Address CRUD Handlers
+  const addAddress = (addressData) => {
+    if (!currentUser?.email) return { success: false, message: 'Please log in to save addresses.' };
+    const result = saveAddress(currentUser.email, addressData);
+    if (result.success) {
+      setUserAddresses(result.addresses);
+      if (result.address?.isDefault || !selectedAddressId) {
+        setSelectedAddressId(result.address.addressId);
+      }
+    }
+    return result;
+  };
+
+  const editAddress = (addressId, updatedFields) => {
+    if (!currentUser?.email) return { success: false, message: 'Please log in to edit addresses.' };
+    const result = updateAddress(currentUser.email, addressId, updatedFields);
+    if (result.success) {
+      setUserAddresses(result.addresses);
+    }
+    return result;
+  };
+
+  const removeAddress = (addressId) => {
+    if (!currentUser?.email) return { success: false, message: 'Please log in to delete addresses.' };
+    const result = deleteAddress(currentUser.email, addressId);
+    if (result.success) {
+      setUserAddresses(result.addresses);
+      if (selectedAddressId === addressId) {
+        const def = result.addresses.find((a) => a.isDefault) || result.addresses[0];
+        setSelectedAddressId(def ? def.addressId : null);
+      }
+    }
+    return result;
+  };
+
+  const makeAddressDefault = (addressId) => {
+    if (!currentUser?.email) return { success: false };
+    const result = setDefaultAddress(currentUser.email, addressId);
+    if (result.success) {
+      setUserAddresses(result.addresses);
+      setSelectedAddressId(addressId);
+    }
+    return result;
+  };
+
+  // Legacy activeCheckoutAddress compatibility layer
+  const activeCheckoutAddress = selectedAddress ? {
+    fullName: selectedAddress.fullName || '',
+    mobileNumber: selectedAddress.phone || '',
+    email: currentUser?.email || '',
+    houseNo: selectedAddress.houseNumber || '',
+    street: selectedAddress.street || '',
+    locality: selectedAddress.area || '',
+    landmark: selectedAddress.landmark || '',
+    pinCode: selectedAddress.pinCode || '',
+    city: selectedAddress.city || '',
+    state: selectedAddress.state || '',
+    country: selectedAddress.country || 'India',
+    deliveryInstructions: ''
+  } : {
     fullName: '',
     mobileNumber: '',
-    email: '',
+    email: currentUser?.email || '',
     houseNo: '',
     street: '',
     locality: '',
@@ -234,7 +344,7 @@ export const AppProvider = ({ children }) => {
     state: '',
     country: 'India',
     deliveryInstructions: ''
-  });
+  };
 
   // Persistent Orders State (Only 100% Verified Paid Orders stored for current user)
   const [orders, setOrders] = useState(() => {
@@ -548,6 +658,9 @@ export const AppProvider = ({ children }) => {
         } else {
           setOrders([]);
         }
+
+        // Load saved addresses for logged in user
+        loadUserAddresses(sessionUser.email);
       } catch (e) {}
 
       return { success: true };
@@ -562,20 +675,8 @@ export const AppProvider = ({ children }) => {
     setCart([]);
     setWishlist([]);
     setOrders([]);
-    setActiveCheckoutAddress({
-      fullName: '',
-      mobileNumber: '',
-      email: '',
-      houseNo: '',
-      street: '',
-      locality: '',
-      landmark: '',
-      pinCode: '',
-      city: '',
-      state: '',
-      country: 'India',
-      deliveryInstructions: ''
-    });
+    setUserAddresses([]);
+    setSelectedAddressId(null);
     localStorage.removeItem('bloom_auth_session');
   };
 
@@ -667,7 +768,7 @@ export const AppProvider = ({ children }) => {
         wishlist,
         toggleWishlist,
         activeCheckoutAddress,
-        setActiveCheckoutAddress,
+        setActiveCheckoutAddress: () => {},
         activeTrackingOrder,
         setActiveTrackingOrder,
         isCartOpen,
@@ -725,6 +826,16 @@ export const AppProvider = ({ children }) => {
         updateProduct,
         deleteProduct,
         cloudSyncStatus,
+        // Saved Address System Exports
+        userAddresses,
+        selectedAddress,
+        selectedAddressId,
+        setSelectedAddressId,
+        addAddress,
+        editAddress,
+        removeAddress,
+        makeAddressDefault,
+        loadUserAddresses,
       }}
     >
       {children}
