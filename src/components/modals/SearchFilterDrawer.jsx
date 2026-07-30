@@ -1,7 +1,6 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
 import { assetPath } from '../../utils/assetPath';
-import { PRODUCTS } from '../../data/products';
 import { X, Search, Filter, ShoppingBag } from 'lucide-react';
 
 export default function SearchFilterDrawer() {
@@ -20,9 +19,10 @@ export default function SearchFilterDrawer() {
 
   if (!isSearchOpen) return null;
 
-  const filtered = products.filter((p) => {
-    const matchesQuery = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'All' || p.category.toLowerCase() === selectedCategory.toLowerCase();
+  const filtered = (products || []).filter((p) => {
+    if (p.status === 'Inactive') return false;
+    const matchesQuery = (p.name || '').toLowerCase().includes(searchQuery.toLowerCase()) || (p.description || '').toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === 'All' || (p.category || '').toLowerCase() === selectedCategory.toLowerCase();
     return matchesQuery && matchesCategory;
   });
 

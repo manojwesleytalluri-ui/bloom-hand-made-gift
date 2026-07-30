@@ -40,8 +40,26 @@ export const AppProvider = ({ children }) => {
   /** Apply a fresh product list from any source (cloud, broadcast, storage) */
   const applyProductUpdate = (fresh) => {
     if (!Array.isArray(fresh) || fresh.length === 0) return;
-    setProducts(fresh);
-    try { localStorage.setItem('bloom_live_products_db', JSON.stringify(fresh)); } catch (e) {}
+    setProducts((prev) => {
+      // Check if products array has actually changed before triggering state change
+      if (JSON.stringify(prev) === JSON.stringify(fresh)) return prev;
+      try { localStorage.setItem('bloom_live_products_db', JSON.stringify(fresh)); } catch (e) {}
+      return fresh;
+    });
+  };
+
+  /** Manual force cloud sync button for Admin */
+  const forceSyncCloud = async () => {
+    setCloudSyncStatus('syncing');
+    const cloud = await fetchCloudProducts();
+    if (cloud) {
+      applyProductUpdate(cloud);
+      setCloudSyncStatus('success');
+    } else {
+      const ok = await saveCloudProducts(products);
+      setCloudSyncStatus(ok ? 'success' : 'error');
+    }
+    setTimeout(() => setCloudSyncStatus('idle'), 2500);
   };
 
   /** Save to localStorage + BroadcastChannel (same-browser) + Cloud (cross-device) */
@@ -49,7 +67,7 @@ export const AppProvider = ({ children }) => {
     setProducts(updatedProducts);
     try {
       localStorage.setItem('bloom_live_products_db', JSON.stringify(updatedProducts));
-      // BroadcastChannel — instant same-browser update
+      // BroadcastChannel — instant same-browser update across tabs
       if (typeof window !== 'undefined' && window.BroadcastChannel) {
         const channel = new BroadcastChannel('bloom_product_sync_channel');
         channel.postMessage({ type: 'PRODUCTS_UPDATED', timestamp: Date.now(), ...eventPayload });
@@ -57,29 +75,44 @@ export const AppProvider = ({ children }) => {
       }
     } catch (e) {}
 
-    // Cloud save — publishes to all other devices
+    // Cloud save — publishes to all other devices (mobile, laptop, tablet)
     setCloudSyncStatus('syncing');
     const ok = await saveCloudProducts(updatedProducts);
     setCloudSyncStatus(ok ? 'success' : 'error');
     if (ok) setTimeout(() => setCloudSyncStatus('idle'), 2500);
   };
 
-  // ── On mount: fetch latest products from cloud, then start 30s polling ──
+  // ── On mount: fetch latest products from cloud, poll every 3s, sync on focus/online ──
   useEffect(() => {
     const loadFromCloud = async () => {
       const cloud = await fetchCloudProducts();
       if (cloud) applyProductUpdate(cloud);
     };
+
     loadFromCloud();
 
-    // Poll every 30 seconds so every device stays in sync
-    pollTimerRef.current = setInterval(async () => {
-      const cloud = await fetchCloudProducts();
-      if (cloud) applyProductUpdate(cloud);
-    }, 30000);
+    // Fast 3-second polling so every device stays synchronized in near real-time
+    pollTimerRef.current = setInterval(loadFromCloud, 3000);
+
+    const handleFocus = () => loadFromCloud();
+    const handleOnline = () => loadFromCloud();
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') loadFromCloud();
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('focus', handleFocus);
+      window.addEventListener('online', handleOnline);
+      document.addEventListener('visibilitychange', handleVisibility);
+    }
 
     return () => {
       if (pollTimerRef.current) clearInterval(pollTimerRef.current);
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('focus', handleFocus);
+        window.removeEventListener('online', handleOnline);
+        document.removeEventListener('visibilitychange', handleVisibility);
+      }
     };
   }, []);
 
@@ -825,6 +858,7 @@ export const AppProvider = ({ children }) => {
         addProduct,
         updateProduct,
         deleteProduct,
+        forceSyncCloud,
         cloudSyncStatus,
         // Saved Address System Exports
         userAddresses,

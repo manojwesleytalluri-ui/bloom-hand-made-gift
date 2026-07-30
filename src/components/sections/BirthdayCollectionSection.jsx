@@ -1,11 +1,14 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
 import { Gift, Sparkles, ShoppingBag, Star } from 'lucide-react';
-import { PRODUCTS } from '../../data/products';
 
 export default function BirthdayCollectionSection() {
   const { products, formatPrice, addToCart } = useApp();
-  const birthdayProducts = products.filter((p) => p.category.toLowerCase() === 'birthday' || p.occasion.toLowerCase() === 'birthday');
+  const birthdayProducts = (products || []).filter(
+    (p) =>
+      p.status !== 'Inactive' &&
+      (p.category?.toLowerCase() === 'birthday' || p.occasion?.toLowerCase() === 'birthday')
+  );
 
   return (
     <section className="py-24 relative bg-obsidian-950/80 border-t border-gold-500/10">

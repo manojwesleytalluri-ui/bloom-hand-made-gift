@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Sparkles, Compass, Check, ArrowRight, RefreshCw, ShoppingBag } from 'lucide-react';
-import { PRODUCTS } from '../../data/products';
 
 export default function AiRecommendationSection() {
   const { products, formatPrice, addToCart } = useApp();

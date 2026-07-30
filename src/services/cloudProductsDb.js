@@ -1,66 +1,99 @@
 /**
- * Bloom Hand Made Gift — Cloud Product Database Service
- * Uses JSONBin.io as free, real-time cross-device JSON storage.
- * Admin uploads instantly publish to all connected devices.
- *
- * HOW IT WORKS:
- *  - All products are stored in a private JSONBin bin (cloud JSON store).
- *  - Admin CRUD operations POST/PUT to the bin via REST API.
- *  - Every customer device polls the bin every 30 seconds.
- *  - BroadcastChannel still handles same-browser real-time sync instantly.
- *  - On first load, products are fetched from cloud (fallback: localStorage seeds).
+ * Bloom Hand Made Gift — Universal Real-Time Cloud Product Database Service
+ * Zero-config, zero-key global cloud REST storage powered by JSONBlob.
+ * Ensures instant real-time synchronization between Admin Portal (Laptop) and Website (Phones, Tablets, Laptops).
  */
 
-const BIN_ID  = import.meta.env.VITE_JSONBIN_BIN_ID  || '';
-const API_KEY = import.meta.env.VITE_JSONBIN_API_KEY  || '';
-const BASE_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+// Shared global cloud endpoint for Bloom luxury catalog
+const GLOBAL_CLOUD_BLOB_ID = '019fb38d-708d-792f-a202-d546ff6869a5';
 
-const HEADERS = {
-  'Content-Type': 'application/json',
-  'X-Master-Key': API_KEY,
-  'X-Bin-Versioning': 'false', // overwrite instead of version
-};
+function getCloudUrl() {
+  const customId = typeof localStorage !== 'undefined' ? localStorage.getItem('bloom_custom_blob_id') : null;
+  const blobId = customId || GLOBAL_CLOUD_BLOB_ID;
+  return `https://jsonblob.com/api/jsonBlob/${blobId}`;
+}
 
-/** Fetch the full product array from the cloud bin */
+/** Fetch the full product array from the global cloud database */
 export async function fetchCloudProducts() {
-  if (!BIN_ID || !API_KEY) return null;
   try {
-    const res = await fetch(`${BASE_URL}/latest`, { headers: { 'X-Master-Key': API_KEY } });
+    const url = getCloudUrl();
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+      },
+    });
+
     if (!res.ok) return null;
     const json = await res.json();
-    return Array.isArray(json?.record?.products) ? json.record.products : null;
-  } catch {
+    return Array.isArray(json?.products) ? json.products : null;
+  } catch (err) {
+    console.warn('[CloudSync] Fetch failed, using local storage cache:', err.message);
     return null;
   }
 }
 
-/** Overwrite the full product array in the cloud bin */
+/** Overwrite and publish the full product array to the global cloud database */
 export async function saveCloudProducts(products) {
-  if (!BIN_ID || !API_KEY) return false;
+  if (!Array.isArray(products)) return false;
+
   try {
-    const res = await fetch(BASE_URL, {
+    const url = getCloudUrl();
+    const payload = {
+      products,
+      updatedAt: new Date().toISOString(),
+      updatedBy: 'Admin Portal',
+    };
+
+    const res = await fetch(url, {
       method: 'PUT',
-      headers: HEADERS,
-      body: JSON.stringify({ products }),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify(payload),
     });
-    return res.ok;
-  } catch {
+
+    if (!res.ok) {
+      // If endpoint returns 404, auto-heal by initializing a fresh cloud blob
+      if (res.status === 404) {
+        return await initFreshCloudBlob(products);
+      }
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error('[CloudSync] Save failed:', err.message);
     return false;
   }
 }
 
-/** Create the bin for the first time (run once from admin panel) */
-export async function initCloudBin(products) {
-  if (!API_KEY) return { success: false, error: 'No API key' };
+/** Auto-heal: Initialize a fresh global cloud blob if primary endpoint is missing */
+async function initFreshCloudBlob(products) {
   try {
-    const res = await fetch('https://api.jsonbin.io/v3/b', {
+    const res = await fetch('https://jsonblob.com/api/jsonBlob', {
       method: 'POST',
-      headers: { ...HEADERS, 'X-Bin-Name': 'bloom-products', 'X-Bin-Private': 'true' },
-      body: JSON.stringify({ products }),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({ products, updatedAt: new Date().toISOString() }),
     });
-    const json = await res.json();
-    return { success: res.ok, binId: json?.metadata?.id };
+
+    if (!res.ok) return false;
+    const location = res.headers.get('location');
+    if (location) {
+      const parts = location.split('/');
+      const newBlobId = parts[parts.length - 1];
+      if (newBlobId && typeof localStorage !== 'undefined') {
+        localStorage.setItem('bloom_custom_blob_id', newBlobId);
+      }
+      return true;
+    }
+    return false;
   } catch (e) {
-    return { success: false, error: e.message };
+    return false;
   }
 }

@@ -39,11 +39,12 @@ export default function AdminPortalModal() {
     addProduct,
     updateProduct,
     deleteProduct,
+    forceSyncCloud,
+    cloudSyncStatus,
     orders,
     setOrders,
     appointments,
-    traffic,
-    cloudSyncStatus
+    traffic
   } = useApp();
 
   const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' | 'orders' | 'inventory' | 'appointments' | 'new-product'
@@ -549,12 +550,26 @@ export default function AdminPortalModal() {
           {/* TAB 3: INVENTORY VAULT (With Full Real-Time Edit & Delete Actions) */}
           {activeTab === 'inventory' && (
             <div className="space-y-6 animate-fadeIn">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <h4 className="font-serif font-bold text-lg text-pearl-50">Catalog & Stock Vault</h4>
-                  <p className="text-xs text-pearl-400">All edits & deletions synchronize instantly across the entire website on all devices.</p>
+                  <p className="text-xs text-pearl-400">All edits & deletions synchronize instantly across the entire website on all devices (mobile, laptop, tablet).</p>
                 </div>
-                <span className="text-xs text-gold-400 font-medium">Total: {products.length} Products Live</span>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={forceSyncCloud}
+                    className="px-3 py-1.5 rounded-lg bg-gold-500/20 border border-gold-400/40 text-gold-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                    title="Force cloud database synchronization across all devices"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${cloudSyncStatus === 'syncing' ? 'animate-spin' : ''}`} />
+                    <span>{cloudSyncStatus === 'syncing' ? 'Syncing...' : 'Force Cloud Sync'}</span>
+                  </button>
+                  <span className="text-xs px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 font-mono flex items-center gap-1.5 shrink-0">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span>Live Cloud Synced</span>
+                  </span>
+                </div>
               </div>
 
               {/* Published Catalog Table */}

@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { PRODUCTS } from '../../data/products';
 import { useApp } from '../../context/AppContext';
 import { Heart, ShoppingBag, Eye, Star, Sparkles, Check, Crown, Gem } from 'lucide-react';
 
@@ -10,9 +9,11 @@ export default function FeaturedBouquetsSection() {
 
   const categories = ['All', 'Featured', 'Wedding', 'Birthday', 'Anniversary', 'Hampers'];
 
+  const activeProducts = (products || []).filter((p) => p.status !== 'Inactive');
+
   const filteredProducts = activeCategory === 'All'
-    ? products
-    : products.filter((p) => p.category.toLowerCase() === activeCategory.toLowerCase());
+    ? activeProducts
+    : activeProducts.filter((p) => p.category?.toLowerCase() === activeCategory.toLowerCase());
 
   const handleImageLoad = (id) => {
     setImageLoadStates(prev => ({ ...prev, [id]: true }));

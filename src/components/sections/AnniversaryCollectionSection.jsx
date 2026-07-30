@@ -1,12 +1,15 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
 import { Heart, Sparkles, Shield, Clock } from 'lucide-react';
-import { PRODUCTS } from '../../data/products';
 import { assetPath } from '../../utils/assetPath';
 
 export default function AnniversaryCollectionSection() {
   const { products, formatPrice, addToCart } = useApp();
-  const eternalProducts = products.filter((p) => p.category.toLowerCase() === 'anniversary' || p.occasion.toLowerCase() === 'anniversary');
+  const eternalProducts = (products || []).filter(
+    (p) =>
+      p.status !== 'Inactive' &&
+      (p.category?.toLowerCase() === 'anniversary' || p.occasion?.toLowerCase() === 'anniversary')
+  );
 
   return (
     <section className="py-24 relative bg-obsidian-950/90 border-t border-gold-500/20">

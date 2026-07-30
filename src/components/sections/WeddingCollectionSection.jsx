@@ -1,11 +1,12 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
 import { Heart, ShoppingBag, Sparkles, Calendar, ArrowRight, CheckCircle2 } from 'lucide-react';
-import { PRODUCTS } from '../../data/products';
 
 export default function WeddingCollectionSection() {
   const { products, formatPrice, addToCart, setIsBookingOpen } = useApp();
-  const weddingProducts = products.filter((p) => p.category.toLowerCase() === 'wedding');
+  const weddingProducts = (products || []).filter(
+    (p) => p.status !== 'Inactive' && p.category?.toLowerCase() === 'wedding'
+  );
 
   return (
     <section id="occasions" className="py-24 relative overflow-hidden bg-emerald-950/20">

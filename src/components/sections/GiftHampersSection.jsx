@@ -1,12 +1,13 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
 import { Gift, Sparkles, Award, ShoppingBag } from 'lucide-react';
-import { PRODUCTS } from '../../data/products';
 import { assetPath } from '../../utils/assetPath';
 
 export default function GiftHampersSection() {
   const { products, formatPrice, addToCart } = useApp();
-  const hamperProducts = products.filter((p) => p.category.toLowerCase() === 'hampers');
+  const hamperProducts = (products || []).filter(
+    (p) => p.status !== 'Inactive' && p.category?.toLowerCase() === 'hampers'
+  );
 
   return (
     <section className="py-24 relative bg-emerald-950/30 border-t border-gold-500/20">
