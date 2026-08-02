@@ -12,28 +12,14 @@ function getCloudUrl() {
   return `https://jsonblob.com/api/jsonBlob/${blobId}`;
 }
 
-/** Sanitize image DataURLs for remote payload so requests remain under HTTP size limits */
+/** Sanitize product payload for remote cloud database */
 function sanitizeProductsForCloud(products) {
   if (!Array.isArray(products)) return [];
-  return products.map((p) => {
-    let cleanImage = p.image || '';
-    if (cleanImage.startsWith('data:image') && cleanImage.length > 50000) {
-      // keep lightweight representation for cloud blob
-      cleanImage = cleanImage.slice(0, 500) + '...';
-    }
-    let cleanImages = Array.isArray(p.images) ? p.images.map(img => {
-      if (typeof img === 'string' && img.startsWith('data:image') && img.length > 50000) {
-        return img.slice(0, 500) + '...';
-      }
-      return img;
-    }) : [cleanImage];
-
-    return {
-      ...p,
-      image: cleanImage,
-      images: cleanImages,
-    };
-  });
+  return products.map((p) => ({
+    ...p,
+    image: p.image || '',
+    images: Array.isArray(p.images) && p.images.length > 0 ? p.images : [p.image || ''],
+  }));
 }
 
 /** Fetch the full product array from the global cloud database */

@@ -148,7 +148,7 @@ export default function AdminPortalModal() {
         const img = new Image();
         img.onload = () => {
           const canvas = document.createElement('canvas');
-          const maxDim = 800;
+          const maxDim = 500;
           let width = img.width;
           let height = img.height;
 
@@ -167,7 +167,7 @@ export default function AdminPortalModal() {
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, width, height);
 
-          const compressedDataUrl = canvas.toDataURL('image/webp', 0.85);
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.65);
           processedImages.push(compressedDataUrl);
           count++;
 
