@@ -51,7 +51,10 @@ export async function fetchCloudProducts() {
 
     if (!res.ok) return null;
     const json = await res.json();
-    return Array.isArray(json?.products) ? json.products : null;
+    if (Array.isArray(json?.products)) {
+      return json.products.filter(p => !['bouq-1', 'bouq-2', 'bouq-3', 'bouq-4', 'bouq-5', 'bouq-6'].includes(p.id));
+    }
+    return null;
   } catch (err) {
     console.warn('[CloudSync] Fetch failed, using local storage cache:', err.message);
     return null;

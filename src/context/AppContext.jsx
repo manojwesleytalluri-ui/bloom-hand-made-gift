@@ -22,15 +22,21 @@ export const currencies = {
 
 export const AppProvider = ({ children }) => {
   // Persistent Products Database with Real-Time Cross-Device Sync
+  const isOldMock = (id) => ['bouq-1', 'bouq-2', 'bouq-3', 'bouq-4', 'bouq-5', 'bouq-6'].includes(id);
+
   const [products, setProducts] = useState(() => {
     const saved = localStorage.getItem('bloom_live_products_db');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) {
+          const cleaned = parsed.filter(p => !isOldMock(p.id));
+          try { localStorage.setItem('bloom_live_products_db', JSON.stringify(cleaned)); } catch (e) {}
+          return cleaned;
+        }
       } catch (e) {}
     }
-    return PRODUCTS;
+    return PRODUCTS.filter(p => !isOldMock(p.id));
   });
 
   // Cloud sync status shown in admin panel
@@ -42,8 +48,8 @@ export const AppProvider = ({ children }) => {
     if (!Array.isArray(fresh)) return;
     setProducts((prev) => {
       const map = new Map();
-      (prev || []).forEach(p => p.id && map.set(p.id, p));
-      fresh.forEach(p => p.id && map.set(p.id, p));
+      (prev || []).filter(p => !isOldMock(p.id)).forEach(p => p.id && map.set(p.id, p));
+      fresh.filter(p => !isOldMock(p.id)).forEach(p => p.id && map.set(p.id, p));
       const merged = Array.from(map.values());
       if (JSON.stringify(prev) === JSON.stringify(merged)) return prev;
       try { localStorage.setItem('bloom_live_products_db', JSON.stringify(merged)); } catch (e) {}
