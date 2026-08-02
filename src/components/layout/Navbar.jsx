@@ -15,7 +15,8 @@ import {
   Clock,
   Sun,
   Moon,
-  PlusCircle
+  PlusCircle,
+  Lock
 } from 'lucide-react';
 
 export default function Navbar() {
@@ -163,15 +164,7 @@ export default function Navbar() {
               )}
             </button>
 
-            {/* 4. Post Product / Admin Portal Button */}
-            <button
-              onClick={() => setIsAdminOpen(true)}
-              className="px-2.5 sm:px-3 py-1.5 rounded-full bg-gold-gradient text-obsidian-950 font-serif font-bold text-[10px] sm:text-xs uppercase tracking-wider flex items-center gap-1 sm:gap-1.5 shadow-gold-sm hover:scale-105 transition-transform"
-              title="Publish New Product / Admin Portal"
-            >
-              <PlusCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-obsidian-950" />
-              <span>Post Product</span>
-            </button>
+
 
             {/* 4. User Profile / Account Trigger Icon (👤) */}
             {currentUser ? (
@@ -308,16 +301,16 @@ export default function Navbar() {
             </button>
           </div>
 
-          {/* Post Product Button for Mobile Phone Users */}
+          {/* Admin Portal Entry Link */}
           <button
             onClick={() => {
               setIsAdminOpen(true);
               setMobileMenuOpen(false);
             }}
-            className="w-full py-3 rounded-full bg-gold-gradient text-obsidian-950 text-center font-serif font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 shadow-gold-sm hover:scale-105 transition-transform"
+            className="w-full py-2.5 rounded-full border border-gold-500/30 text-gold-300 hover:bg-gold-500/10 text-center font-serif text-xs uppercase tracking-wider flex items-center justify-center gap-2"
           >
-            <PlusCircle className="w-4 h-4 text-obsidian-950" />
-            <span>Post New Product to Website</span>
+            <Lock className="w-3.5 h-3.5 text-gold-400" />
+            <span>VIP Admin Portal Login</span>
           </button>
 
           {!currentUser && (
