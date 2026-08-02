@@ -26,10 +26,10 @@ export default function CustomBouquetBuilder() {
 
   // Packaging options
   const packagingOptions = [
-    { name: 'Black Velvet Box', price: 60, image: assetPath('/assets/images/luxury_rose_bouquet_1785002544191.png') },
-    { name: 'Emerald Velvet Chest', price: 90, image: assetPath('/assets/images/luxury_gift_hamper_1785003431109.png') },
-    { name: 'Italian Crystal Vase', price: 120, image: assetPath('/assets/images/royal_wedding_bouquet_1785002559950.png') },
-    { name: 'Gold Foil Hand Wrapper', price: 40, image: assetPath('/assets/images/eternal_rose_cloche_1785003145770.png') },
+    { name: 'Black Velvet Box', price: 60 },
+    { name: 'Emerald Velvet Chest', price: 90 },
+    { name: 'Italian Crystal Vase', price: 120 },
+    { name: 'Gold Foil Hand Wrapper', price: 40 },
   ];
 
   // Calculate Base Price
@@ -59,7 +59,6 @@ export default function CustomBouquetBuilder() {
       id: `custom-${Date.now()}`,
       name: `Bespoke Floral Sculpture (${stemCount} Stems)`,
       priceUSD: totalCustomUSD,
-      image: selectedPack.image,
       category: 'Custom',
       occasion: 'Custom',
       badge: '1-of-1 Bespoke',
@@ -237,13 +236,9 @@ export default function CustomBouquetBuilder() {
           <div className="lg:col-span-5 sticky top-28">
             <div className="glass-panel p-8 rounded-3xl border border-gold-500/40 space-y-6 shadow-gold-lg">
               
-              <div className="relative h-64 rounded-2xl overflow-hidden bg-obsidian-900">
-                <img
-                  src={selectedPack.image}
-                  alt="Custom Preview"
-                  className="w-full h-full object-cover rounded-2xl"
-                />
-                <div className="absolute top-3 left-3 px-3 py-1 rounded-full bg-obsidian-950/80 backdrop-blur-md border border-gold-500/40 text-gold-300 text-[10px] uppercase font-bold">
+              <div className="relative h-44 rounded-2xl overflow-hidden bg-obsidian-900 border border-gold-500/20 flex flex-col items-center justify-center text-center p-6 space-y-2">
+                <Sliders className="w-10 h-10 text-gold-400 opacity-60 mb-1" />
+                <div className="px-3 py-1 rounded-full bg-obsidian-950/80 border border-gold-500/40 text-gold-300 text-[10px] uppercase font-bold">
                   Live Custom Spec
                 </div>
               </div>

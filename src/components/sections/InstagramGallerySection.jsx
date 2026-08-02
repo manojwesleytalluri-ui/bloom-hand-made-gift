@@ -5,56 +5,7 @@ import { assetPath } from '../../utils/assetPath';
 export default function InstagramGallerySection() {
   const [hoveredPost, setHoveredPost] = useState(null);
 
-  const posts = [
-    {
-      id: 'ig-1',
-      image: 'https://images.unsplash.com/photo-1487530811176-3780de880c2d?auto=format&fit=crop&q=80&w=800',
-      likes: '4.8k',
-      comments: '342',
-      caption: 'Grand Prix Ecuadorian Red Velvet Roses with 24K gold foil trim. #BloomHandMadeGift',
-      aspectClass: 'row-span-2'
-    },
-    {
-      id: 'ig-2',
-      image: 'https://images.unsplash.com/photo-1561181286-d3fee7d55364?auto=format&fit=crop&q=80&w=800',
-      likes: '6.2k',
-      comments: '512',
-      caption: 'Royal wedding installation at Villa d\'Este, Lake Como. White orchids & peonies.',
-      aspectClass: ''
-    },
-    {
-      id: 'ig-3',
-      image: assetPath('/assets/images/eternal_rose_cloche_1785003145770.png'),
-      likes: '3.9k',
-      comments: '219',
-      caption: 'L\'Éternel 5-Year Preserved Rose under hand-blown crystal. Paris Atelier.',
-      aspectClass: ''
-    },
-    {
-      id: 'ig-4',
-      image: 'https://images.unsplash.com/photo-1563241527-3004b7be0ffd?auto=format&fit=crop&q=80&w=800',
-      likes: '7.1k',
-      comments: '890',
-      caption: 'The Sovereign Hamper pairing Dom Pérignon Vintage with rare black orchids.',
-      aspectClass: ''
-    },
-    {
-      id: 'ig-5',
-      image: 'https://images.unsplash.com/photo-1455659817273-f96807779a8a?auto=format&fit=crop&q=80&w=800',
-      likes: '5.4k',
-      comments: '412',
-      caption: 'Behind the scenes at our Paris atelier. Master florists at work. #AtelierLife',
-      aspectClass: 'row-span-2'
-    },
-    {
-      id: 'ig-6',
-      image: 'https://images.unsplash.com/photo-1508610048659-a06b669e3321?auto=format&fit=crop&q=80&w=800',
-      likes: '8.3k',
-      comments: '645',
-      caption: 'Moonlit garden party arrangements. Soft peach roses with golden candlelight.',
-      aspectClass: ''
-    }
-  ];
+  const posts = [];
 
   return (
     <section id="gallery" className="py-28 relative bg-obsidian-950 overflow-hidden">

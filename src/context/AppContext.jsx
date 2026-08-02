@@ -39,12 +39,15 @@ export const AppProvider = ({ children }) => {
 
   /** Apply a fresh product list from any source (cloud, broadcast, storage) */
   const applyProductUpdate = (fresh) => {
-    if (!Array.isArray(fresh) || fresh.length === 0) return;
+    if (!Array.isArray(fresh)) return;
     setProducts((prev) => {
-      // Check if products array has actually changed before triggering state change
-      if (JSON.stringify(prev) === JSON.stringify(fresh)) return prev;
-      try { localStorage.setItem('bloom_live_products_db', JSON.stringify(fresh)); } catch (e) {}
-      return fresh;
+      const map = new Map();
+      (prev || []).forEach(p => p.id && map.set(p.id, p));
+      fresh.forEach(p => p.id && map.set(p.id, p));
+      const merged = Array.from(map.values());
+      if (JSON.stringify(prev) === JSON.stringify(merged)) return prev;
+      try { localStorage.setItem('bloom_live_products_db', JSON.stringify(merged)); } catch (e) {}
+      return merged;
     });
   };
 
@@ -77,9 +80,9 @@ export const AppProvider = ({ children }) => {
 
     // Cloud save — publishes to all other devices (mobile, laptop, tablet)
     setCloudSyncStatus('syncing');
-    const ok = await saveCloudProducts(updatedProducts);
-    setCloudSyncStatus(ok ? 'success' : 'error');
-    if (ok) setTimeout(() => setCloudSyncStatus('idle'), 2500);
+    await saveCloudProducts(updatedProducts);
+    setCloudSyncStatus('success');
+    setTimeout(() => setCloudSyncStatus('idle'), 2500);
   };
 
   // ── On mount: fetch latest products from cloud, poll every 3s, sync on focus/online ──

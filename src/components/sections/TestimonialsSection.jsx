@@ -5,6 +5,20 @@ import { Star, Quote, ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-rea
 export default function TestimonialsSection() {
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  if (!TESTIMONIALS || TESTIMONIALS.length === 0) {
+    return (
+      <section id="reviews" className="py-24 relative bg-obsidian-950/90 border-t border-gold-500/20 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+          <div className="glass-panel p-8 rounded-3xl border border-gold-500/30 max-w-xl mx-auto">
+            <Star className="w-12 h-12 text-gold-500/40 mx-auto mb-3" />
+            <p className="text-pearl-50 font-serif text-lg font-bold">No Reviews Loaded</p>
+            <p className="text-pearl-300/70 text-xs mt-1">Testimonials data has been cleared.</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   const prev = () => {
     setCurrentIndex((prevIdx) => (prevIdx === 0 ? TESTIMONIALS.length - 1 : prevIdx - 1));
   };
@@ -14,6 +28,8 @@ export default function TestimonialsSection() {
   };
 
   const active = TESTIMONIALS[currentIndex];
+
+  if (!active) return null;
 
   return (
     <section id="reviews" className="py-24 relative bg-obsidian-950/90 border-t border-gold-500/20 overflow-hidden">
@@ -44,7 +60,7 @@ export default function TestimonialsSection() {
             <div className="space-y-6">
               {/* Star Rating */}
               <div className="flex items-center gap-1 text-gold-400">
-                {[...Array(active.rating)].map((_, i) => (
+                {[...Array(active.rating || 5)].map((_, i) => (
                   <Star key={i} className="w-5 h-5 fill-current" />
                 ))}
               </div>
@@ -57,11 +73,13 @@ export default function TestimonialsSection() {
               {/* Author Details */}
               <div className="flex flex-col sm:flex-row items-center justify-between pt-6 border-t border-gold-500/20 gap-6 sm:gap-4">
                 <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
-                  <img
-                    src={active.avatar}
-                    alt={active.name}
-                    className="w-14 h-14 rounded-full object-cover border-2 border-gold-400 shadow-gold-sm"
-                  />
+                  {active.avatar && (
+                    <img
+                      src={active.avatar}
+                      alt={active.name}
+                      className="w-14 h-14 rounded-full object-cover border-2 border-gold-400 shadow-gold-sm"
+                    />
+                  )}
                   <div className="flex flex-col items-center sm:items-start">
                     <h4 className="font-serif font-bold text-base text-pearl-50 flex items-center gap-1.5">
                       <span>{active.name}</span>

@@ -14,7 +14,8 @@ import {
   Sparkles,
   Clock,
   Sun,
-  Moon
+  Moon,
+  PlusCircle
 } from 'lucide-react';
 
 export default function Navbar() {
@@ -28,6 +29,7 @@ export default function Navbar() {
     setIsSearchOpen,
     setIsProfileOpen,
     setIsTrackingOpen,
+    setIsAdminOpen,
     currentUser,
     logoutUser,
     theme,
@@ -159,6 +161,16 @@ export default function Navbar() {
                   {totalCartCount}
                 </span>
               )}
+            </button>
+
+            {/* 4. Post Product / Admin Portal Button */}
+            <button
+              onClick={() => setIsAdminOpen(true)}
+              className="px-3 py-1.5 rounded-full bg-gold-gradient text-obsidian-950 font-serif font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-gold-sm hover:scale-105 transition-transform"
+              title="Publish New Product / Admin Portal"
+            >
+              <PlusCircle className="w-4 h-4 text-obsidian-950" />
+              <span className="hidden md:inline">Post Product</span>
             </button>
 
             {/* 4. User Profile / Account Trigger Icon (👤) */}

@@ -72,6 +72,7 @@ export default function AdminPortalModal() {
   const [isFeatured, setIsFeatured] = useState(true);
   const [newTagline, setNewTagline] = useState('');
   const [uploadedImages, setUploadedImages] = useState([]);
+  const [imageUrlInput, setImageUrlInput] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadError, setUploadError] = useState('');
@@ -197,23 +198,28 @@ export default function AdminPortalModal() {
     e.preventDefault();
     setIsProductAdded(true);
 
-    const mainImg = uploadedImages.length > 0
-      ? uploadedImages[0]
-      : assetPath('/assets/images/sovereign_red_roses_1785005575575.png');
+    const urlImg = imageUrlInput.trim();
+    const mainImg = urlImg
+      ? urlImg
+      : (uploadedImages.length > 0 ? uploadedImages[0] : '');
+
+    const productImages = urlImg
+      ? [urlImg, ...uploadedImages]
+      : (uploadedImages.length > 0 ? uploadedImages : []);
 
     const newBouquet = {
       id: `bouq-${Date.now()}`,
       name: newTitle,
-      tagline: newTagline,
-      description: newTagline,
+      tagline: newTagline || 'Bespoke Haute Couture Edition',
+      description: newTagline || 'Bespoke Haute Couture Edition',
       priceUSD: parseFloat(newPrice) || 390,
       originalPriceUSD: newDiscountPrice ? parseFloat(newDiscountPrice) : null,
       rating: 5.0,
       reviewsCount: 1,
       category: newCategory,
-      occasion: newCategory === 'Wedding' ? 'Wedding' : 'Anniversary',
+      occasion: newCategory === 'Wedding' ? 'Wedding' : (newCategory === 'Birthday' ? 'Birthday' : 'Anniversary'),
       image: mainImg,
-      images: uploadedImages.length > 0 ? uploadedImages : [mainImg],
+      images: productImages,
       stock: parseInt(newStock) || 50,
       availability: newAvailability,
       deliveryTime: newDeliveryTime,
@@ -222,7 +228,7 @@ export default function AdminPortalModal() {
       badge: isFeatured ? 'Featured Luxury' : 'New Arrival',
       isNew: true,
       is3D: false,
-      flowerTypes: ['Rare Custom Import']
+      flowerTypes: ['Haute Couture Spec']
     };
 
     addProduct(newBouquet);
@@ -231,10 +237,11 @@ export default function AdminPortalModal() {
       setIsProductAdded(false);
       setNewTitle('');
       setNewTagline('');
+      setImageUrlInput('');
       setNewPrice('550');
       setNewDiscountPrice('');
       setUploadedImages([]);
-      setActiveTab('inventory'); // Switch to inventory tab to view published product
+      setActiveTab('inventory');
     }, 1200);
   };
 
@@ -759,7 +766,18 @@ export default function AdminPortalModal() {
 
                   {/* Multiple Product Images Upload & Preview Section */}
                   <div className="space-y-3 pt-2">
-                    <label className="text-pearl-300 block font-semibold">Product Images (JPG, JPEG, PNG, WebP) *</label>
+                    <div>
+                      <label className="text-pearl-300 block mb-1 font-semibold">Image URL Link (Optional - Paste direct photo URL)</label>
+                      <input
+                        type="url"
+                        value={imageUrlInput}
+                        onChange={(e) => setImageUrlInput(e.target.value)}
+                        placeholder="https://images.unsplash.com/photo-1534528741775... or image link"
+                        className="w-full bg-obsidian-900 border border-gold-500/30 rounded-xl p-3 text-pearl-100 outline-none focus:border-gold-400"
+                      />
+                    </div>
+
+                    <label className="text-pearl-300 block font-semibold">Upload Local Product Photos (Optional)</label>
 
                     {uploadError && (
                       <p className="text-xs text-red-400 bg-red-950/40 p-2.5 rounded-xl border border-red-500/30">{uploadError}</p>

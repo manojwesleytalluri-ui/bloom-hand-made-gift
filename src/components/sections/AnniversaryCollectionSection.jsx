@@ -1,7 +1,6 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
-import { Heart, Sparkles, Shield, Clock } from 'lucide-react';
-import { assetPath } from '../../utils/assetPath';
+import { Heart, Shield, Clock } from 'lucide-react';
 
 export default function AnniversaryCollectionSection() {
   const { products, formatPrice, addToCart } = useApp();
@@ -14,25 +13,14 @@ export default function AnniversaryCollectionSection() {
   return (
     <section className="py-24 relative bg-obsidian-950/90 border-t border-gold-500/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Banner Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           
           {/* Left Visual Highlight */}
           <div className="lg:col-span-6 relative">
-            <div className="glass-panel p-4 rounded-3xl border border-gold-500/40 relative shadow-gold-lg overflow-hidden group">
-              <img
-                src={assetPath('/assets/images/eternal_rose_cloche_1785003145770.png')}
-                alt="Eternal Rose Cloche"
-                className="w-full h-[320px] sm:h-[450px] object-cover rounded-2xl group-hover:scale-105 transition-transform duration-700"
-              />
-              <div className="absolute bottom-4 left-4 right-4 sm:bottom-8 sm:left-8 sm:right-8 glass-panel p-4 sm:p-6 rounded-2xl border border-gold-500/50">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-1.5 sm:gap-0">
-                  <span className="text-[10px] sm:text-xs uppercase font-serif tracking-widest text-gold-400 font-bold">5-Year Preserved Craftsmanship</span>
-                  <span className="text-[10px] sm:text-xs text-pearl-300">100% Genuine Ecuadorian</span>
-                </div>
-                <h3 className="text-xl font-serif font-bold text-pearl-50">L’Éternel Cloche Edition</h3>
-                <p className="text-xs text-pearl-200/80 font-light mt-1">Real Ecuadorian rose organic preservation under hand-blown Italian crystal.</p>
+            <div className="glass-panel p-8 rounded-3xl border border-gold-500/40 relative shadow-gold-lg overflow-hidden group flex items-center justify-center min-h-[320px]">
+              <div className="text-center text-pearl-300/60 font-serif text-sm">
+                <Heart className="w-12 h-12 mx-auto mb-3 opacity-40 text-gold-400" />
+                <span>No Anniversary Items Loaded</span>
               </div>
             </div>
           </div>
@@ -85,7 +73,6 @@ export default function AnniversaryCollectionSection() {
           </div>
 
         </div>
-
       </div>
     </section>
   );
