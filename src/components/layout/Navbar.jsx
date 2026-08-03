@@ -66,6 +66,7 @@ export default function Navbar() {
     { name: 'Gift Hampers', href: '#hampers' },
     { name: 'Bespoke Atelier', href: '#builder' },
     { name: 'AI Recommender', href: '#ai-recommendations' },
+    { name: 'Sustainable Agriculture', href: '#agriculture' },
     { name: 'Why Us', href: '#why-us' },
   ];
 

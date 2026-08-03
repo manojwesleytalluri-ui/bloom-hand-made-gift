@@ -538,6 +538,13 @@ export const AppProvider = ({ children }) => {
   const [modalPushed, setModalPushed] = useState(false);
 
   useEffect(() => {
+    if (typeof window !== 'undefined' && (!window.history.state || !window.history.state.bloomAppStarted)) {
+      window.history.replaceState({ bloomAppStarted: true }, '');
+      window.history.pushState({ bloomAppStarted: true }, '');
+    }
+  }, []);
+
+  useEffect(() => {
     if (isAnyModalOpen) {
       if (!modalPushed) {
         window.history.pushState({ modalOpen: true }, '');

@@ -9,6 +9,7 @@ import BirthdayCollectionSection from './components/sections/BirthdayCollectionS
 import AnniversaryCollectionSection from './components/sections/AnniversaryCollectionSection';
 import GiftHampersSection from './components/sections/GiftHampersSection';
 import CustomBouquetBuilder from './components/sections/CustomBouquetBuilder';
+import SustainableAgricultureSection from './components/sections/SustainableAgricultureSection';
 import WhyChooseUsSection from './components/sections/WhyChooseUsSection';
 import TestimonialsSection from './components/sections/TestimonialsSection';
 import InstagramGallerySection from './components/sections/InstagramGallerySection';
@@ -59,6 +60,9 @@ function MainStoreLayout() {
 
         {/* AI Bouquet Recommendation Section */}
         <AiRecommendationSection />
+
+        {/* Sustainable Agriculture & Eco-Sourcing Section */}
+        <SustainableAgricultureSection />
 
         {/* 8. Why Choose Us */}
         <WhyChooseUsSection />

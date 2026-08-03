@@ -104,16 +104,17 @@ export default function FooterSection() {
           </ul>
         </div>
 
-        {/* Collections Links */}
+        {/* Collections & Eco Sourcing Links */}
         <div className="space-y-3">
           <h4 className="font-serif font-bold text-sm uppercase tracking-widest text-gold-400">
-            Collections
+            Collections & Eco Sourcing
           </h4>
           <ul className="space-y-2 text-xs text-pearl-300/80 font-light">
             <li><a href="#collections" className="hover:text-gold-300">Grand Velvet Roses</a></li>
             <li><a href="#occasions" className="hover:text-gold-300">Haute Couture Bridal</a></li>
             <li><a href="#collections" className="hover:text-gold-300">L’Éternel Cloches</a></li>
             <li><a href="#builder" className="hover:text-gold-300">Custom Atelier Builder</a></li>
+            <li><a href="#agriculture" className="hover:text-emerald-400 font-semibold text-emerald-400/90 flex items-center gap-1">🌱 Sustainable Agriculture</a></li>
             <li><a href="#collections" className="hover:text-gold-300">Champagne Hampers</a></li>
           </ul>
         </div>
